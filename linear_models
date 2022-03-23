@@ -1,0 +1,51 @@
+#What is lm
+?lm
+
+#lm is used to fit linear models. It can be used to carry out regression, 
+#single stratum analysis of variance and analysis of covariance (although aov 
+#may provide a more convenient interface for these).
+
+#Usage:
+#lm(formula, data, subset, weights, na.action,
+  # method = "qr", model = TRUE, x = FALSE, y = FALSE, qr = TRUE,
+  # singular.ok = TRUE, contrasts = NULL, offset, ...)
+
+#create datasets
+height <- c(176, 154, 138, 196, 132, 176, 181, 169, 150, 175)
+bodymass <- c(82, 49, 53, 112, 47, 69, 77, 71, 62,78)
+
+#make a linear model
+fit <- lm(bodymass~height) # Y ~ X - this is the formula
+
+class(fit)
+# the output "lm" means it is a linear model
+
+summary(fit)
+# The output - Call:
+  #lm(formula = bodymass ~ height)
+
+#Residuals:
+  #Min       1Q   Median       3Q      Max 
+#-11.8746  -5.8428   0.7893   4.8001  15.3061 
+
+#Coefficients:
+               #Estimate     Std. Error    t value   Pr(>|t|)    
+ #(Intercept) -70.4627        24.0148      -2.934    0.018878 *  (Y)
+  #height     0.8528 (slope)  0.1448      5.889     0.000366 ***  (X)
+ # ---
+  #Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 8.854 on 8 degrees of freedom
+#Multiple R-squared:  0.8126,	Adjusted R-squared:  0.7891 
+#F-statistic: 34.68 on 1 and 8 DF,  p-value: 0.0003662
+
+names(fit)
+#[1] "coefficients"  "residuals"     "effects"       "rank"          "fitted.values"
+#[6] "assign"        "qr"            "df.residual"   "xlevels"       "call"         
+#[11] "terms"         "model"  
+
+#Plot the linear model
+plot(height, bodymass) # Y ~ X
+
+#draw linear regression line on your 2d graph
+abline(fit, col="red")
