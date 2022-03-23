@@ -1,3 +1,55 @@
+What is lm?
+?lm
+
+#lm is used to fit linear models. It can be used to carry out regression, 
+#single stratum analysis of variance and analysis of covariance (although aov 
+#may provide a more convenient interface for these).
+
+#Usage:
+#lm(formula, data, subset, weights, na.action,
+  # method = "qr", model = TRUE, x = FALSE, y = FALSE, qr = TRUE,
+  # singular.ok = TRUE, contrasts = NULL, offset, ...)
+
+#create datasets
+height <- c(176, 154, 138, 196, 132, 176, 181, 169, 150, 175)
+bodymass <- c(82, 49, 53, 112, 47, 69, 77, 71, 62,78)
+
+#make a linear model
+fit <- lm(bodymass~height) # Y ~ X - this is the formula
+
+class(fit)
+# the output "lm" means it is a linear model
+
+summary(fit)
+# The output - Call:
+  #lm(formula = bodymass ~ height)
+
+#Residuals:
+  #Min       1Q   Median       3Q      Max 
+#-11.8746  -5.8428   0.7893   4.8001  15.3061 
+
+#Coefficients:
+               #Estimate     Std. Error    t value   Pr(>|t|)    
+ #(Intercept) -70.4627        24.0148      -2.934    0.018878 *  (Y)
+  #height     0.8528 (slope)  0.1448      5.889     0.000366 ***  (X)
+ # ---
+  #Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 8.854 on 8 degrees of freedom
+#Multiple R-squared:  0.8126,	Adjusted R-squared:  0.7891 
+#F-statistic: 34.68 on 1 and 8 DF,  p-value: 0.0003662
+
+names(fit)
+#[1] "coefficients"  "residuals"     "effects"       "rank"          "fitted.values"
+#[6] "assign"        "qr"            "df.residual"   "xlevels"       "call"         
+#[11] "terms"         "model"  
+
+#Plot the linear model
+plot(height, bodymass) # Y ~ X
+
+#draw linear regression line on your 2d graph
+abline(fit, col="red")
+
 #What is lm
 ?lm
 
@@ -49,3 +101,292 @@ plot(height, bodymass) # Y ~ X
 
 #draw linear regression line on your 2d graph
 abline(fit, col="red")
+
+##################################################################################
+Homework
+
+rm(list = ls())
+nlsw88 <- read_csv("nlsw88.csv")
+#Rows: 2246 Columns: 4  
+#dbl (4): lwage, yrs_school, ttl_exp, black
+
+#interested in estimating the linear model for the following formula:
+# log(wage_i) = beta_o + beta_1yrs_school_i + epsilon_i
+
+model <- lm(nlsw88$lwage~nlsw88$yrs_school)
+
+#According to this model, what is the estimate of beta_1? Ans:0.092920
+summary(model)
+#Call:
+#lm(formula = nlsw88$lwage ~ nlsw88$yrs_school)
+
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-2.29340 -0.32611 -0.00807  0.29471  2.20496 
+
+#Coefficients:
+#                  Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)       0.652578   0.057771   11.30   <2e-16 ***
+#nlsw88$yrs_school 0.092920   0.004333   21.45   <2e-16 ***
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.5236 on 2244 degrees of freedom
+#Multiple R-squared:  0.1701,	Adjusted R-squared:  0.1697 
+#F-statistic: 459.9 on 1 and 2244 DF,  p-value: < 2.2e-16
+
+#################
+# What is the 90% confidence interval (CI) of beta_1 according to this model?
+confint(model,level=0.9) #confidence interval command
+#                       5 %      95 %
+#(Intercept)       0.55751337 0.7476421
+#nlsw88$yrs_school 0.08579005 0.1000497
+#thus, the upperbound is 0.1000497 and lowerbound is 0.08579005
+
+###############
+#Assume that instead of having all the data, you just know that the covariance 
+#between the logarithm of the wage and the years of schooling is 0.6043267. 
+#What other information would you need to be able to find betahat_1?
+
+#recall formula for betahat_1: 
+#(1/n*Sum of x_i - X * y_i - Y) / (1/n*sum of x_i - X)^2
+
+#Ans: The numerator of this expression is just the sample covariance between x 
+#and y. Similarly the denominator is just the sample variance of x. 
+#Then, if we have cov(x,y) and var(x), then we are able to calculate betahat_1. 
+#In this case y corresponds to the log of the wage and x to the total years of 
+#schooling. Then, the correct answer is the sample variance of the variable 
+#yrs_school.
+
+###########
+#What is the value of betahat_o? Ans: 0.65257774 
+coefficients(model)
+#(Intercept) nlsw88$yrs_school 
+#0.65257774        0.09291988 
+
+###############
+#After running your model, use the command residuals to calculate the residuals 
+#of the regression. Calculate the sum of the residuals. 
+deviance(model) #method 1
+sum(resid(model)^2) #method 2
+#615.1035
+#Should we be surprised that the sum is so close to zero?
+#no. by default the E(epislon)=0, and thus should eb close to 0.
+
+#########
+#now we are interested in estimating the linear model for the following formula:
+# log(wage_i) = beta_o + beta_1black + epsilon_i
+
+model_2 <- lm(nlsw88$lwage~nlsw88$black)
+summary(model_2)
+#Call:
+#lm(formula = nlsw88$lwage ~ nlsw88$black)
+
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-1.90667 -0.40290 -0.03418  0.37105  1.96129 
+
+#Coefficients:
+#                Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)   1.91161    0.01398   136.739  < 2e-16 ***
+#nlsw88$black -0.16554    0.02744   -6.033 1.88e-09 ***
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.5701 on 2244 degrees of freedom
+#Multiple R-squared:  0.01596,	Adjusted R-squared:  0.01552 
+#F-statistic: 36.39 on 1 and 2244 DF,  p-value: 1.88e-09
+
+###################
+#A critic is claiming that this doesn't prove that there are differences in 
+#the wage of black women and women of other races. You decide to conduct a test 
+#on the parameter beta_1 where the null hypothesis is beta_1=0. 
+#What is the value of the t-statistic? Ans: -6.033
+
+#Coefficients:
+#                Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)   1.91161    0.01398   136.739  < 2e-16 ***
+#nlsw88$black -0.16554    0.02744   -6.033 1.88e-09 ***
+
+#################
+#Would you reject this null hypothesis using a 99% level of confidence?
+
+#According to the R output, the p-value associated with this test is 1.88e-09. 
+#This is less than 0.01, so we can reject the null hypothesis at a 99% level of confidence.
+
+#################
+#Labor economists have estimated Mincer equations that include not only total 
+#years of schooling, but also total experience as explanatory variables of the 
+#wage. Assume now that you want to estimate the following model: 
+
+# log(wage_i) = beta_o + beta_1 yrs_school + beta_2 total experience + epsilon_i
+# What is the value of R^2? Ans: 0.2671
+
+model_3 <- lm(nlsw88$lwage~nlsw88$yrs_school+nlsw88$ttl_exp)
+summary(model_3)
+
+#Call:
+#lm(formula = nlsw88$lwage ~ nlsw88$yrs_school + nlsw88$ttl_exp)
+
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-2.09807 -0.29945 -0.00571  0.25158  2.49949 
+
+#Coefficients:
+#                   Estimate  Std. Error  t value Pr(>|t|)    
+#  (Intercept)       0.336944   0.057308    5.88  4.73e-09 ***
+#  nlsw88$yrs_school 0.079148   0.004150   19.07  < 2e-16 ***
+#  nlsw88$ttl_exp    0.039559   0.002296   17.23  < 2e-16 ***
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.4921 on 2243 degrees of freedom
+#Multiple R-squared:  0.2671,	Adjusted R-squared:  0.2664 
+#F-statistic: 408.7 on 2 and 2243 DF,  p-value: < 2.2e-16
+
+##################
+#Some young folks are claiming that they prefer to drop out from school since 
+#each additional year of schooling changes the log of the wage in the same 
+#amount as one half year of experience. A group of parents is really worried. 
+#They ask you to conduct a formal test over this sample.
+
+#What would be the null hypothesis of this test?
+#Ans: 2*beta_1 = beta_2
+
+# What models would correspond to the restricted model under this null hypothesis?
+#Ans:
+#    log(wage_i) = beta_o + beta_1 yrs_school_i + beta_2 total experience_i + epsilon_i 
+#    log(wage_i) = beta_o + beta_1(yrs_school_i + 2*total experience_i) + epsilon_i
+#    log(wage_i) = beta_o + beta_2(1/2*yrs_school_i + total experience_i) + epsilon_i
+
+#############
+#Estimate the restricted model in R. What is the value that you obtain for 
+#betahat_1 in the restricted model? Ans: 0.026292 
+
+#create new variable for beta_1(yrs_school_i + 2*total experience_i)
+nlsw88$newvar <- nlsw88$yrs_school+2*nlsw88$ttl_exp
+restricted_model <- lm(nlsw88$lwage~nlsw88$newvar)
+summary(restricted_model)
+
+#lm(formula = nlsw88$lwage ~ nlsw88$newvar)
+
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-1.79637 -0.32172 -0.02268  0.27505  2.39896 
+
+#Coefficients:
+#                 Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)     0.865430   0.042395   20.41   <2e-16 ***
+#  nlsw88$newvar 0.026292   0.001075   24.47   <2e-16 ***
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.5106 on 2244 degrees of freedom
+#Multiple R-squared:  0.2106,	Adjusted R-squared:  0.2102 
+#F-statistic: 598.6 on 1 and 2244 DF,  p-value: < 2.2e-16
+  
+#################
+#multivariable regression
+multi <- lm(nlsw88$lwage ~ nlsw88$yrs_school + nlsw88$ttl_exp)
+summary(multi) 
+#Call:
+#  lm(formula = nlsw88$lwage ~ nlsw88$yrs_school + nlsw88$ttl_exp)
+
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-2.09807 -0.29945 -0.00571  0.25158  2.49949 
+
+#Coefficients:
+#                  Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)       0.336944   0.057308    5.88 4.73e-09 ***
+#  nlsw88$yrs_school 0.079148   0.004150   19.07  < 2e-16 ***
+#  nlsw88$ttl_exp    0.039559   0.002296   17.23  < 2e-16 ***
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.4921 on 2243 degrees of freedom
+#Multiple R-squared:  0.2671,	Adjusted R-squared:  0.2664 
+#F-statistic: 408.7 on 2 and 2243 DF,  p-value: < 2.2e-16
+
+anova_unrest <- anova(multi)
+anova_unrest
+# Analysis of Variance Table
+
+# Response: nlsw88$lwage
+#                     Df Sum Sq Mean Sq F value    Pr(>F)    
+#nlsw88$yrs_school    1 126.07 126.066  520.55 < 2.2e-16 ***
+#nlsw88$ttl_exp       1  71.90  71.901  296.90 < 2.2e-16 ***
+#  Residuals         2243 543.20   0.242                      
+#---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Restricted model
+nlsw88$newvar <- nlsw88$yrs_school + 2*nlsw88$ttl_exp
+restricted <- lm(nlsw88$lwage ~ nlsw88$newvar)
+summary(restricted) 
+# Call:
+# lm(formula = nlsw88$lwage ~ nlsw88$newvar)
+
+# Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-1.79637 -0.32172 -0.02268  0.27505  2.39896 
+
+#Coefficients:
+#               Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)   0.865430   0.042395   20.41   <2e-16 ***
+#nlsw88$newvar 0.026292   0.001075   24.47   <2e-16 ***
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.5106 on 2244 degrees of freedom
+#Multiple R-squared:  0.2106,	Adjusted R-squared:  0.2102 
+#F-statistic: 598.6 on 1 and 2244 DF,  p-value: < 2.2e-16
+
+anova_rest <- anova(restricted)
+anova_rest
+#Analysis of Variance Table
+
+#Response: nlsw88$lwage
+#                Df Sum Sq Mean Sq F value    Pr(>F)    
+#nlsw88$newvar    1 156.08 156.080  598.62 < 2.2e-16 ***
+#  Residuals     2244 585.09   0.261                      
+#---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Test
+statistic_test <- (anova_rest$`Sum Sq`[2]-anova_unrest$`Sum Sq`[3]/1)/
+                      (anova_unrest$`Sum Sq`[3]/anova_unrest$Df[3])
+#1: number of restrictions and 2243: Df of Residuals in anova_unrest
+#select columns rows with [row no.]
+statistic_test #172.9599
+                
+               
+###################
+# Do you reject or not reject this null hypothesis at a confidence level of 95%?
+pvalue <- df(statistic_test, 1, anova_unrest$Df[3])
+pvalue #1.930469e-38
+#The p-value associated with this test is less than 0.05 (95% CI). 
+#Then, we can reject the null hypothesis at this confidence level. 
+
+#You can also use the car package in R and the following code to perform the 
+#test directly:
+install.packages("car")
+library(car)
+
+matrixR <- c(0, -2, 1) 
+#matrix notation beta_o = 0, beta_1+2*beta_1 = -2, beta_3,beta_4 = 1
+linearHypothesis(multi, matrixR)
+#output:
+#Linear hypothesis test
+
+#Hypothesis:
+#  - 2 nlsw88$yrs_school  + nlsw88$ttl_exp = 0
+
+#Model 1: restricted model
+#Model 2: nlsw88$lwage ~ nlsw88$yrs_school + nlsw88$ttl_exp
+
+#    Res.Df    RSS Df Sum of Sq      F    Pr(>F)    
+#1   2244  585.09                                  
+#2   2243  543.20  1    41.887 172.96 < 2.2e-16 ***
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
