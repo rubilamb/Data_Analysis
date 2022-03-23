@@ -1,0 +1,189 @@
+# choose Matrix(n,m)
+## Function	to	create	a	matrix	of	choose(n,m) rows	and	n columns.	
+## Each	row	has	m 1 and	the	other	elements	are	0,	arranged	in	a	manner	
+## reflecting	one	possible	selection.
+
+
+# NROW(x)/NCOL(x)
+## Returns	the	number	of	rows	or	columns	in	matrix	x
+
+
+# set.seed(x)
+## Sets the	seed	of R’s	random	number	generator,	which	is	useful	for	
+## creating	simulations	or	random objects	that	can	be	reproduced. The	seed	
+## x	is	a	number	that is	used	to	set	the	starting	point	for	 generating	 
+## a series	 of	 random	 numbers.	 Each	 unique	 seed	 returns	 a	 unique	 
+## random	 number	sequence and once	a	seed	is	set,	the	same	sequence	can	
+## be	produced	repeatedly.
+
+
+
+# Preliminaries
+#-------------------------------------------------
+#install.packages('perm')
+library(perm)
+rm(list = ls())
+setwd("~/Desktop/MITx/Data Analysis/R/Session 7")
+
+# The following problems are based on the paper:Duflo, Esther, Rema Hanna, and Stephen P. Ryan. 2012. "Incentives Work: Getting Teachers to Come to 
+School."  American Economic Review, 102(4): 1241-78. In this experiment, the researchers set out to test whether providing teachers with cameras to 
+take photos to prove their attendance could be eﬀective in reducing teacher absenteeism. First, read the abstract of the paper using the link above. 
+You can refer back to the paper as necessary.
+
+First, consider the case where we have 8 schools. Our aim is to calculate the Fisher's exact p-value. 
+Under the assumption that we will have the same number of treated and control units, how many potential treatment assignments across 
+these 8 units are possible?  
+Ans: 8 choose 4
+
+#--------------------------------------------------
+
+Suppose that after the treatment has been assigned and the experiment has been carried out, the researcher has the following data. 
+The variable open corresponds to the fraction of days that the school was opened when random visits were made. 
+For this observed data, what would be the value of our statistic?
+
+perms <- chooseMatrix(8,4)
+perms
+A <- matrix(c(0.462, 0.731, 0.571, 0.923, 0.333, 0.750, 0.893, 0.692), nrow=8, ncol=1, byrow=TRUE)
+treatment_avg <- (1/4)*perms%*%A
+control_avg <- (1/4)*(1-perms)%*%A
+test_statistic <- abs(treatment_avg-control_avg)
+rownumber <- apply(apply(perms, 1, 
+                         function(x) (x == c(0, 1, 0, 0, 0, 1, 1, 1))), 
+                   2, sum)
+rownumber <- (rownumber == 8)
+observed_test <- test_statistic[rownumber == TRUE]
+
+#### see the values in the Global Environment. Observerd test value is 0.19425
+
+#--------------------------------------------------
+
+According to your results, among the test statistics computed for all treatment assignments, how many are larger than or equal to 
+the observed test statistic?
+
+larger_than_observed <- (test_statistic >= 0.19)
+## numbers in which the statistic exceeds or is equal to the value in the observed data
+sum(larger_than_observed)
+
+Ans: 16
+
+df <- data.frame(perms,control_avg,treatment_avg,test_statistic)
+
+
+What would be the Fisher's Exact p-value in this case?
+Ans: 0.23
+
+#-------------------------------------------------
+
+Now load the data set teachers _final.csv in R and name it schools. This is done in line 31 of the provided R code.
+With 49 schools treated, what are the number of possible assignments in this case?
+Ans: 100 choose 49
+
+
+#-------------------------------------------------
+
+Since we are working in a very large sample, we can now consider Neyman's methods of inference. 
+What is the Average Treatment Effect (ATE) on the observed data set? You will need to use R to compute this answer.
+
+simul_stat <- as.vector(NULL)
+schools <- read.csv('teachers_final.csv')
+
+set.seed(1001)
+for(i in 1:100) {
+  print(i)
+  schools$rand <- runif(100,min=0,max=1)
+  schools$treatment_rand <- as.numeric(rank(schools$rand)<=49)
+  schools$control_rand = 1-schools$treatment_rand
+  simul_stat <-append(simul_stat,
+            sum(schools$treatment_rand*schools$open)/sum(schools$treatment_rand) 
+            - sum(schools$control_rand*schools$open)/sum(schools$control_rand))
+}
+
+schools$control = 1-schools$treatment
+actual_stat <- sum(schools$treatment*schools$open)/sum(schools$treatment) - sum(schools$control*schools$open)/sum(schools$control)
+
+sum(abs(simul_stat) >= actual_stat)/NROW(simul_stat)
+
+Ans: 0.197
+
+#---------------------------------------------------
+What is the upper bound of the standard error of this point estimate using Neyman's method?
+Ans: 0.031
+
+#Printing the ATE
+ate <- actual_stat
+ate
+
+control_mean <- sum(schools$control*schools$open)/sum(schools$control)
+treatment_mean <- sum(schools$treatment*schools$open)/sum(schools$treatment)
+
+s_c <- (1/(sum(schools$control)-1))*sum(((schools$open-control_mean)*schools$control)^2)
+s_t <- (1/(sum(schools$treatment)-1))*sum(((schools$open-treatment_mean)*schools$treatment)^2)
+
+Vneyman <- (s_c/sum(schools$control) + s_t/sum(schools$treatment))
+print(sqrt(Vneyman))
+print(actual_stat/sqrt(Vneyman))
+
+print(actual_stat-1.96*sqrt(Vneyman))
+print(actual_stat+1.96*sqrt(Vneyman))
+
+What is the t-statistic if we want to test the null hypothesis that ATE is equal to zero?
+Ans: 6.45
+
+
+#---------------------------------------------------
+#Question 13 - check answer as this is WRONG
+Assume that the value from Question 12 is the minimum ATE such that the intervention is cost-effective. 
+What is the sample size required to have a power of at least  with the following properties?
+Ans: 103
+
+with a significance level of 
+an equal number of treated and control units
+ is the (weighted) average of the variance of the control and the treatment group in the existing data
+
+alpha <- 0.05
+beta <- 0.1 #1-0.9, which is the power
+phi <- 1.96
+tao <- 0.09845 #answer from qns 12
+gamma <- 0.5
+s_c
+s_t
+sigma_square_hat <-(49*s_t^2+51*s_c^2)/100
+sigma_square_hat
+
+#apply sample size formula
+Sample_size <- ((phi+1-beta*1-alpha/2)^2/(tao^2/sigma_square_hat)*gamma(1-gamma))
+Sample_size
+
+#---------------------------------------------------
+Use your code to generate plots for the following bandwidths. Which of them seems most appropriate given the data?
+
+library("np")
+attach(schools)
+plot <-npreg(xdat=schools$pctpostwritten, ydat= schools$open, bws=0.04,bandwidth.compute=FALSE)
+plot(plot)
+
+bw_a <-npreg(xdat=pctpostwritten, ydat= open, bws=0.04,bandwidth.compute=FALSE)
+plot(bw_a) -- ANSWER
+
+bw_b <-npreg(xdat=pctpostwritten, ydat= open, bws=0.001,bandwidth.compute=FALSE) 
+plot(bw_b)
+
+bw_c <-npreg(xdat=pctpostwritten, ydat= open, bws=1,bandwidth.compute=FALSE) 
+plot(bw_c)
+
+bw_d <-npreg(xdat=pctpostwritten, ydat= open, bws=20,bandwidth.compute=FALSE) 
+plot(bw_d)
+
+
+#---------------------------------------------------
+Use the R command stat_ecdf() to generate a plot of the CDFs for each cohort to see those results visually. 
+Does the distribution of open in the treatment group FOSD that of the control group?
+
+treatmeant_group <- filter(schools,schools$treatment==1)
+control_group <- filter(schools,schools$treatment==0)          
+
+ggplot(schools, aes(schools$open)
+       stat_ecdf(schools&open, aes(treatment_group), color = "darkblue")+
+         stat_ecdf(schools$open, aes(control_group, colour="red"))+
+         xlab("")+
+         ylam(""))
