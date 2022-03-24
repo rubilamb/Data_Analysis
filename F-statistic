@@ -1,0 +1,28 @@
+#------------------------------------------------------------------------------
+To find critical value for F statistic, you need these information
+
+alpha <- 0.05 (for 95% significance level)
+df1 <- 2 (the number of restrictions in your hypothesis-the numerator)
+df2 <- 495 (n-k where k is the number of parameters- the denomenator)
+
+Fcrit <- qf(alpha,df1,df2,lower.tail = FALSE) <-- ensure lower tail is FALSE otherwise the default code is TRUE
+Ans: 3.01
+
+#------------------------------------------------------------------------------
+
+To compute the test statistic, you need these information which can be found in R with the anova() function.
+
+SSR_r <- sum of squares (restricted)
+SSR_u <- sum of squares (unrestricted)
+r <- number of restrictions
+n <- sample size
+k <- number of permutations including beta_o the null hypothesis
+
+t_test <- (SSR_r - SSR_u / r) / (SSR_u * (n-k))
+
+#------------------------------------------------------------------------------
+
+Do you accept or reject the null hypothesis at 95% confidence interval?
+
+Ans: You should reject large values of the test statistic.
+As calculated above, if Fcrit < t_test, then you should reject.
