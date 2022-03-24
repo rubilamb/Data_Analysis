@@ -1,0 +1,129 @@
+############################################################################
+Multivariate Regression
+
+Formula ---> y = beta_o + beta_1 + beta_2 + beta_3 + epsilon (or U for standard error)
+
+multi <- lm(Y~X_1 + X_2 + X_3)
+
+
+######################## EXAMPLE ############################################
+
+multi <- lm(nlsw88$lwage ~ nlsw88$yrs_school + nlsw88$ttl_exp)
+summary(multi) 
+
+#Call:
+#  lm(formula = nlsw88$lwage ~ nlsw88$yrs_school + nlsw88$ttl_exp)
+
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-2.09807 -0.29945 -0.00571  0.25158  2.49949 
+
+#Coefficients:
+#                  Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)       0.336944   0.057308    5.88 4.73e-09 ***
+#  nlsw88$yrs_school 0.079148   0.004150   19.07  < 2e-16 ***
+#  nlsw88$ttl_exp    0.039559   0.002296   17.23  < 2e-16 ***
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.4921 on 2243 degrees of freedom
+#Multiple R-squared:  0.2671,	Adjusted R-squared:  0.2664 
+#F-statistic: 408.7 on 2 and 2243 DF,  p-value: < 2.2e-16
+
+#################################################################
+
+Unrestricted Model <-- include all interested variables without arguments
+
+anova_unrest <- anova(multi)
+anova_unrest
+# Analysis of Variance Table
+
+# Response: nlsw88$lwage
+#                     Df Sum Sq Mean Sq F value    Pr(>F)    
+#nlsw88$yrs_school    1 126.07 126.066  520.55 < 2.2e-16 ***
+#nlsw88$ttl_exp       1  71.90  71.901  296.90 < 2.2e-16 ***
+#  Residuals         2243 543.20   0.242                      
+#---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+################################################################
+
+Restricted Model <-- In this case, 1 year of going to school increases salary by half a dollar. i.e. 2 years of experience is equivalent to 
+                     1 year of school, which is equivalent to 1/2 a dollar of salary incremental. 
+
+nlsw88$newvar <- nlsw88$yrs_school + 2*nlsw88$ttl_exp   --> create new variable that collapse 2 linear variables together. 
+
+restricted <- lm(nlsw88$lwage ~ nlsw88$newvar)
+
+summary(restricted) 
+# Call:
+# lm(formula = nlsw88$lwage ~ nlsw88$newvar)
+
+# Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-1.79637 -0.32172 -0.02268  0.27505  2.39896 
+
+#Coefficients:
+#               Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)   0.865430   0.042395   20.41   <2e-16 ***
+#nlsw88$newvar 0.026292   0.001075   24.47   <2e-16 ***
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.5106 on 2244 degrees of freedom
+#Multiple R-squared:  0.2106,	Adjusted R-squared:  0.2102 
+#F-statistic: 598.6 on 1 and 2244 DF,  p-value: < 2.2e-16
+
+anova_rest <- anova(restricted)
+anova_rest
+#Analysis of Variance Table
+
+#Response: nlsw88$lwage
+#                Df Sum Sq Mean Sq F value    Pr(>F)    
+#nlsw88$newvar    1 156.08 156.080  598.62 < 2.2e-16 ***
+#  Residuals     2244 585.09   0.261                      
+#---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Test
+statistic_test <- (anova_rest$`Sum Sq`[2]-anova_unrest$`Sum Sq`[3]/1)/
+                      (anova_unrest$`Sum Sq`[3]/anova_unrest$Df[3])
+#1: number of restrictions and 2243: Df of Residuals in anova_unrest
+#select columns rows with [row no.]
+statistic_test #172.9599
+                
+               
+#########################################################################################
+
+Do you reject or not reject this null hypothesis at a confidence level of 95%?
+
+pvalue <- df(statistic_test, 1, anova_unrest$Df[3])
+pvalue #1.930469e-38
+
+The p-value associated with this test is less than 0.05 (95% CI). 
+Then, we can reject the null hypothesis at this confidence level. 
+
+
+You can also use the car package in R and the following code to perform the test directly:
+install.packages("car")
+library(car)
+
+matrixR <- c(0, -2, 1) ------> matrix notation for your hypothesis i.e beta_o = 0, beta_1+2*beta_1 = -2, beta_3,beta_4 = 1
+
+linearHypothesis(multi, matrixR)
+
+output:
+#Linear hypothesis test
+
+#Hypothesis:
+#  - 2 nlsw88$yrs_school  + nlsw88$ttl_exp = 0
+
+#Model 1: restricted model
+#Model 2: nlsw88$lwage ~ nlsw88$yrs_school + nlsw88$ttl_exp
+
+#    Res.Df    RSS Df Sum of Sq      F    Pr(>F)    
+#1   2244  585.09                                  
+#2   2243  543.20  1    41.887 172.96 < 2.2e-16 ***
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
