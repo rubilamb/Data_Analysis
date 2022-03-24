@@ -1,0 +1,71 @@
+################### LINEAR REGRESSION (Bivariate) ###########################################
+
+Recall the linear regression model --> y = beta_o + beta_1(X) + epsilon (or u, for standard error)
+Formula <-- lm(Y~X)
+
+Manual calculations to find betahat_o <-- mean(y) - betahat_1*mean(x)
+Manual calculations to find betahat_1 <-- cov(x,y) / var(x)
+
+OR
+
+betahat <- coef(formula)
+y_hat <- fitted(formula)
+u_hat <- resid(formula)
+
+Command for display values: eg till 15th row
+cbind(y_hat,betahat,u_hat)[1:15]. <-- can add other interested columns
+
+#---------------------------------------------------------------------------------------------
+
+Function in R for this model is "lm" --> lm(Y~X)
+example: model <- lm(nlsw88$lwage~nlsw88$yrs_school)
+
+summary(model)
+
+output:
+#Call:
+#lm(formula = nlsw88$lwage ~ nlsw88$yrs_school)
+
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-2.29340 -0.32611 -0.00807  0.29471  2.20496 
+
+#Coefficients:
+#                  Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)       0.652578   0.057771   11.30   <2e-16 ***
+#nlsw88$yrs_school 0.092920   0.004333   21.45   <2e-16 ***
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.5236 on 2244 degrees of freedom
+#Multiple R-squared:  0.1701,	Adjusted R-squared:  0.1697 
+#F-statistic: 459.9 on 1 and 2244 DF,  p-value: < 2.2e-16
+
+##################################################################
+
+PLOT THE LINEAR MODEL
+plot(Y, X) # Y ~ X
+
+DRAW A REGRESSION LINE
+abline(model, col="red") <--- model is the what the lm function has done above 
+
+##################################################################
+
+GOODNESS OF FIT <-- technically the R^2
+
+model <- lm(Y~X)
+betahat <- coef(model)
+y_hat <- fitted(model)
+u_hat <- resid(model)
+
+Calculate R^2 in 3 different ways
+
+1. var(y_hat)/ var(y)
+2. 1 - var(u_hat) / var(y)
+3. cor(y,y_hat)^2
+
+##################################################################
+
+
+
+
