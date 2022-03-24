@@ -1,0 +1,55 @@
+# Say a scholarship is randomly assigned to a subset of students (treated) 
+# and not to others (control). The two groups are ex-ante identical and the 
+# sample size is 10,000. Assume this sample size is large enough such that a 
+# normal approximation is appropriate. The average score of the treated group 
+# is 10 and the average score of the control group is 9.2. 
+# The variance of difference between the treated and control is 0.25 and the 
+# 95% critical value for normal approximation is 1.96
+
+# Compute the 95% confidence interval of the effect of the scholarship on 
+# student performance.
+
+
+#Calculate difference in sample average taohat
+taohat <- 10-9.2
+taohat
+
+variance <- 0.25
+tcrit <- 1.96
+
+# Thus, margin is tcrit x sqrt of the variance, which is the standard deviation
+margin <- tcrit*sqrt(variance)
+margin
+
+#thus CI is
+upperbound <- taohat+margin
+upperbound
+
+lowerbound <- taohat-margin
+lowerbound
+
+#-------------------------------------------------------------------------------
+#another practice
+tcrit_5 <- 1.96
+tcrit_10 <- 1.64
+
+#for tcrit 5%
+upperbound_spendsmorethan30percent <- -0.011+tcrit_5*0.005
+upperbound_spendsmorethan30percent #-0.0012
+lowerbound_spendsmorethan30percent <- -0.011-tcrit_5*0.005
+lowerbound_spendsmorethan30percent #-0.0208
+#both values do not include zero, thus we can reject the hypothesis
+
+#for tcrit 5%
+upperbound_medicaldebt <- -0.032+tcrit_5*0.010
+upperbound_medicaldebt #-0.0124
+lowerbound_medicaldebt <- -0.032-tcrit_5*0.010
+lowerbound_medicaldebt #-0.0516
+#both values do not include zero, thus we can reject the hypothesis
+
+#for tcrit 10%
+upperbound_medicaldebt_2 <- -0.032+tcrit_10*0.010
+upperbound_medicaldebt_2 #-0.0156
+lowerbound_medicaldebt_2 <- -0.032-tcrit_10*0.010
+lowerbound_medicaldebt_2 #-0.0484
+#both values do not include zero, thus we can reject the hypothesis
