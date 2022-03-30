@@ -1,0 +1,461 @@
+rm(list = ls())
+library(rdd)
+ndiv_final <- read_csv("indiv_final.csv")
+View(indiv_final)
+
+
+
+#-------------------------------------------------------------------
+
+# Question 11 Based on the information provided, create a variable for whether 
+# the party of the candidate is the same party as the incumbent. 
+# What is the proportion of these cases in your data set?
+
+
+#Create dummy variable: if difshare > 0, then 1 (candidate runs for the same party as incumbent)
+indiv_final$positive_difshare <- as.numeric(indiv_final$difshare > 0)
+mean(indiv_final$positive_difshare)
+
+#--------> Answer: 0.3990055
+
+#-------------------------------------------------------------------
+
+# One of the main assumptions in RD designs is that there are no 
+# jumps in the density of the running variable around the cutoff. The package 
+# in R rdd has a command DCdensity. Run the command in R using difshare as the 
+# running variable. 
+
+# Question 12: What is the difference in the log estimate in heights at the 
+# cutpoint? Note: this should be a negative number.
+
+DCdensity(indiv_final$difshare, ext.out=TRUE)
+# Difference in the log estimate in heights at the cutpoint?
+#   ext.out=TRUE to see all the calculated values.
+
+#output:
+# $theta
+#[1] -0.002470001
+
+#$se
+#[1] 0.05193608
+
+#$z
+#[1] -0.04755847
+
+#$p
+#[1] 0.9620681
+
+#$binsize
+#[1] 0.005290885
+
+#$bw
+#[1] 0.1833466
+
+#$cutpoint
+#[1] 0
+
+#-------------> Answer: log estimate = theta = -0.002470001
+
+#-------------------------------------------------------------------
+
+# Question 13: Can you reject the null hypothesis that this difference is equal to 0?
+
+#-----------Answer: p-value = 0.9620681, so we CAN'T reject the null (difference in cutoff is 0)
+#-----------This implies that the assumption that there is no differential density 
+#-----------around the cutoff holds in this case. We can also see this in the plot produced by the R command
+
+#-------------------------------------------------------------------
+
+# Now, keep only the observations within 50 percentage points of the cutoff 
+# (the absolute value of difshare is less than or equal to 0.5). Also, 
+# create in R the required variables to run the following models:
+
+# keep only the observations within 50 percentage points of the cutoff
+#    this means diffshare between -0.5 and 0.5 (cutoff is 0 by default)
+subset_indiv_final = subset(indiv_final,  -0.5 < difshare & difshare < 0.5)
+DCdensity(subset_indiv_final$difshare, ext.out=TRUE)
+
+#output
+#$theta
+#[1] -0.002008358
+
+#$se
+#[1] 0.05699707
+
+#$z
+#[1] -0.03523617
+
+#$p
+#[1] 0.9718914
+
+#$binsize
+#[1] 0.004159501
+
+#$bw
+#[1] 0.1543961
+
+#$cutpoint
+#[1] 0
+
+
+# Now, create models provided to test:
+
+model1 <- lm(myoutcomenext ~ positive_difshare, 
+            data=subset_indiv_final)
+
+model2 <- lm(myoutcomenext ~ positive_difshare + difshare, 
+            data=subset_indiv_final)
+
+model3 <- lm(myoutcomenext ~ positive_difshare + difshare + positive_difshare*difshare, 
+            data=subset_indiv_final)
+
+model4 <- lm(myoutcomenext ~ positive_difshare + difshare + I(difshare^2), 
+            data=subset_indiv_final)
+
+model5 <- lm(myoutcomenext ~ positive_difshare + difshare + I(difshare^2) + 
+              positive_difshare*difshare + positive_difshare*I(difshare^2), 
+            data=subset_indiv_final)
+
+model6 <- lm(myoutcomenext ~ positive_difshare + 
+              difshare + I(difshare^2)+ I(difshare^3), 
+            data=subset_indiv_final)
+
+model7 <- lm(myoutcomenext ~ positive_difshare + 
+              difshare + I(difshare^2)+ I(difshare^3) + 
+              positive_difshare*difshare + positive_difshare*I(difshare^2) + positive_difshare*I(difshare^3), 
+            data=subset_indiv_final)
+
+# Question 14: Which of the following models do yuou find that the effects of party 
+# incumbency over re-election is greater than 0.6?
+
+summary(model1)
+
+#Call:
+#  lm(formula = myoutcomenext ~ positive_difshare, data = subset_indiv_final)
+
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-0.77463 -0.02151 -0.02151  0.22537  0.97849 
+
+#Coefficients:
+#                   Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)       0.021509   0.003216   6.689 2.32e-11 ***
+#positive_difshare 0.753124   0.004643 162.213  < 2e-16 ***
+
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.3077 on 17601 degrees of freedom
+#Multiple R-squared:  0.5992,	Adjusted R-squared:  0.5992 
+#F-statistic: 2.631e+04 on 1 and 17601 DF,  p-value: < 2.2e-16
+
+# ---------------> Value is 0.753124 > 0.6 (YES)
+
+summary(model2)
+
+#lm(formula = myoutcomenext ~ positive_difshare + difshare, data = subset_indiv_final)
+
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-0.84767 -0.05064  0.01555  0.20671  1.02522 
+
+#Coefficients:
+#                  Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)       0.087180   0.005073   17.19   <2e-16 ***
+#positive_difshare 0.626388   0.008896   70.41   <2e-16 ***
+#difshare          0.268232   0.016107   16.65   <2e-16 ***
+
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.3054 on 17600 degrees of freedom
+#Multiple R-squared:  0.6054,	Adjusted R-squared:  0.6054 
+#F-statistic: 1.35e+04 on 2 and 17600 DF,  p-value: < 2.2e-16
+
+# ---------------> Value is 0.626388 > 0.6 (YES)
+
+summary(model3)
+
+#lm(formula = myoutcomenext ~ positive_difshare + difshare + positive_difshare * 
+#     difshare, data = subset_indiv_final)
+
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-0.87965 -0.04019  0.00226  0.19854  1.00846 
+
+#Coefficients:
+#                          Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)                0.063624   0.006195  10.271  < 2e-16 ***
+#positive_difshare          0.623200   0.008898  70.035  < 2e-16 ***
+#difshare                   0.172020   0.021697   7.928 2.36e-15 ***
+#positive_difshare:difshare 0.213689   0.032336   6.608 3.99e-11 ***
+
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.305 on 17599 degrees of freedom
+#Multiple R-squared:  0.6064,	Adjusted R-squared:  0.6063 
+#F-statistic:  9038 on 3 and 17599 DF,  p-value: < 2.2e-16
+
+# ---------------> Value is 0.623200 > 0.6 (YES)
+
+summary(model4)
+
+#Call:
+#  lm(formula = myoutcomenext ~ positive_difshare + difshare + I(difshare^2), 
+#     data = subset_indiv_final)
+
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-0.88608 -0.03960  0.00443  0.20247  1.00887 
+
+#Coefficients:
+#                 Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)       0.074149   0.005489  13.508  < 2e-16 ***
+#positive_difshare 0.622731   0.008906  69.920  < 2e-16 ***
+#difshare          0.280344   0.016209  17.295  < 2e-16 ***
+#I(difshare^2)     0.196243   0.031780   6.175 6.76e-10 ***
+  
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.305 on 17599 degrees of freedom
+#Multiple R-squared:  0.6063,	Adjusted R-squared:  0.6062 
+#F-statistic:  9033 on 3 and 17599 DF,  p-value: < 2.2e-16
+
+# ---------------> Value is 0.622731 > 0.6 (YES)
+
+summary(model5)
+
+#Call:
+#  lm(formula = myoutcomenext ~ positive_difshare + difshare + I(difshare^2) + 
+#       positive_difshare * difshare + positive_difshare * I(difshare^2), 
+#     data = subset_indiv_final)
+
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-0.83274 -0.03245  0.00432  0.18011  1.00788 
+
+#Coefficients:
+#                                Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)                      0.103363   0.009269  11.151  < 2e-16 ***
+#positive_difshare                0.530164   0.013240  40.042  < 2e-16 ***
+#difshare                         0.649624   0.085815   7.570 3.91e-14 ***
+#I(difshare^2)                    0.946990   0.164653   5.751 9.00e-09 ***
+#positive_difshare:difshare       0.407613   0.125223   3.255  0.00114 ** 
+#positive_difshare:I(difshare^2) -2.349721   0.246785  -9.521  < 2e-16 ***
+
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.3042 on 17597 degrees of freedom
+#Multiple R-squared:  0.6084,	Adjusted R-squared:  0.6083 
+#F-statistic:  5468 on 5 and 17597 DF,  p-value: < 2.2e-16
+
+# ---------------> Value is 0.530164  < 0.6 (NO)
+
+summary(model6)
+
+#Call:
+#  lm(formula = myoutcomenext ~ positive_difshare + difshare + I(difshare^2) + 
+#       I(difshare^3), data = subset_indiv_final)
+
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-0.83622 -0.03564  0.01062  0.18368  1.01635 
+
+#Coefficients:
+#                     Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)        0.107890   0.006804  15.857  < 2e-16 ***
+#positive_difshare  0.558409   0.011755  47.504  < 2e-16 ***
+#difshare           0.577476   0.039043  14.791  < 2e-16 ***
+#I(difshare^2)      0.159876   0.032015   4.994 5.98e-07 ***
+#I(difshare^3)     -1.361025   0.162762  -8.362  < 2e-16 ***
+
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.3044 on 17598 degrees of freedom
+#Multiple R-squared:  0.6078,	Adjusted R-squared:  0.6077 
+#F-statistic:  6819 on 4 and 17598 DF,  p-value: < 2.2e-16
+
+# ---------------> Value is 0.558409  < 0.6 (NO)
+
+summary(model7)
+
+#Call:
+#  lm(formula = myoutcomenext ~ positive_difshare + difshare + I(difshare^2) + 
+#       I(difshare^3) + positive_difshare * difshare + positive_difshare * 
+#       I(difshare^2) + positive_difshare * I(difshare^3), data = subset_indiv_final)
+
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-0.84578 -0.02062 -0.00122  0.18487  0.99956 
+
+#Coefficients:
+#                                 Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)                       0.1300     0.0125  10.402  < 2e-16 ***
+#positive_difshare                 0.4764     0.0178  26.772  < 2e-16 ***
+#difshare                          1.2854     0.2179   5.899 3.72e-09 ***
+#I(difshare^2)                     4.1124     1.0108   4.069 4.75e-05 ***
+#I(difshare^3)                     4.1829     1.3178   3.174  0.00151 ** 
+#positive_difshare:difshare        0.4393     0.3145   1.397  0.16243    
+#positive_difshare:I(difshare^2)  -8.9419     1.4803  -6.041 1.57e-09 ***
+#positive_difshare:I(difshare^3)   0.4926     1.9625   0.251  0.80181    
+
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.3041 on 17595 degrees of freedom
+#Multiple R-squared:  0.6089,	Adjusted R-squared:  0.6087 
+#F-statistic:  3913 on 7 and 17595 DF,  p-value: < 2.2e-16
+
+# ---------------> Value is 0.4764   < 0.6 (NO)
+
+
+############ We can also run this in matrix notation
+
+#Parametric Regression
+matrix_coef <- matrix(NA, nrow = 2, ncol = 7)
+
+indiv <- subset_indiv_final %>%
+  mutate(X1 = difshare,
+         X2 = difshare^2,
+         X3 = difshare ^3,
+         X4 = X1*above, # above is the dummy created in Q11
+         X5 = X2*above,
+         X6 = X3*above)
+
+model1_matrix <- lm(myoutcomenext ~ positive_difshare, 
+             data=subset_indiv_final)
+matrix_coef[1, 1] <- model1_matrix$coefficients[2]
+pvalue <- summary(model1_matrix)
+matrix_coef[2, 1] <- pvalue$coefficients[2, 4]
+
+
+model2_matrix <- lm(myoutcomenext ~ positive_difshare + difshare, 
+             data=subset_indiv_final)
+matrix_coef[1, 2] <- model2_matrix$coefficients[2]
+pvalue <- summary(model2_matrix)
+matrix_coef[2, 2] <- pvalue$coefficients[2, 4]
+
+
+model3_matrix <- lm(myoutcomenext ~ positive_difshare + difshare + positive_difshare*difshare, 
+             data=subset_indiv_final)
+matrix_coef[1, 3] <- model3_matrix$coefficients[2]
+pvalue <- summary(model3_matrix )
+matrix_coef[2, 3] <- pvalue$coefficients[2, 4]
+
+
+model4_matrix <- lm(myoutcomenext ~ positive_difshare + difshare + I(difshare^2), 
+             data=subset_indiv_final)
+matrix_coef[1, 4] <- model4_matrix$coefficients[2]
+pvalue <- summary(model4_matrix)
+matrix_coef[2, 4] <- pvalue$coefficients[2, 4]
+
+
+model5_matrix <- lm(myoutcomenext ~ positive_difshare + difshare + I(difshare^2) + 
+               positive_difshare*difshare + positive_difshare*I(difshare^2), 
+             data=subset_indiv_final)
+matrix_coef[1, 5] <- model5_matrix$coefficients[2]
+pvalue <- summary(model5_matrix)
+matrix_coef[2, 5] <- pvalue$coefficients[2, 4]
+
+model6_matrix <- lm(myoutcomenext ~ positive_difshare + 
+               difshare + I(difshare^2)+ I(difshare^3), 
+             data=subset_indiv_final)
+matrix_coef[1, 6] <- model6_matrix$coefficients[2]
+pvalue <- summary(model6_matrix)
+matrix_coef[2, 6] <- pvalue$coefficients[2, 4]
+
+model7_matrix <- lm(myoutcomenext ~ positive_difshare + 
+               difshare + I(difshare^2)+ I(difshare^3) + 
+               positive_difshare*difshare + positive_difshare*I(difshare^2) + positive_difshare*I(difshare^3), 
+             data=subset_indiv_final)
+matrix_coef[1, 7] <- model7_matrix$coefficients[2]
+pvalue <- summary(model7_matrix)
+matrix_coef[2, 7] <- pvalue$coefficients[2, 4]
+
+matrix_coef
+
+#ouput
+
+#     [,1]      [,2]      [,3]      [,4]      [,5]      [,6]          [,7]
+#[1,] 0.753124 0.6263884 0.6231998 0.6227309 0.5301643 0.5584094  4.764126e-01
+#[2,] 0.000000 0.0000000 0.0000000 0.0000000 0.0000000 0.0000000 8.514610e-155
+
+#------------>See that model 1-4 has values > 0.6
+
+###########################################################################
+
+# Question 15: For which of the models can you reject the null hypothesis that the
+# incumbent party has no advantage over re-election outcomes with a significance 
+# level of 99%?
+
+#     [,1]      [,2]      [,3]      [,4]      [,5]      [,6]          [,7]
+#[1,] 0.753124 0.6263884 0.6231998 0.6227309 0.5301643 0.5584094  4.764126e-01
+#[2,] 0.000000 0.0000000 0.0000000 0.0000000 0.0000000 0.0000000 8.514610e-155
+
+# ------> All the models has a p-value (on positive_difshare) < 0.001 / see 2nd row 
+# ------> so we can reject the null at 99% level.
+# This means we cannot say there's no effect between positive_difshare and the outcome.
+
+#############################################################################
+
+# Question 16: Now use the RDestimate command in R to estimate the effect of 
+# non-parametrically. What is the point estiamte you obtain using this command?
+
+model8 <- RDestimate(myoutcomenext ~ difshare, data=subset_indiv_final) 
+model8
+
+#output
+
+# Call:
+#RDestimate(formula = myoutcomenext ~ difshare, data = subset_indiv_final)
+
+#Coefficients:
+#  LATE    Half-BW  Double-BW  
+# 0.4707     0.4511     0.5119 
+
+#------------------> Answer: LATE = 0.4707
+# also returns estimates of half and double of the optimal bandwidth
+
+# Question 17: The command also returns the estimate with half and double of
+# the optimal bandwidth. What is the estimate for half of the bandwidth?
+
+#------------------> Answer: Half-BW = 0.4511
+
+#############################################################################
+
+# Question 8: Develop a scatterplot to compare the bandwidths. One the optimal
+# bandwidth, one with 3 times the optimal bandwidth and one with one-third of
+#the optimal bandwidth.
+
+# plotting using different bandwidth (from smallest to largest)
+summary(RDestimate(myoutcomenext ~ difshare, data=subset_indiv_final)) 
+
+#output
+
+#Call:
+#RDestimate(formula = myoutcomenext ~ difshare, data = subset_indiv_final)
+
+#Type:
+#sharp 
+
+#Estimates:
+#            Bandwidth  Observations  Estimate  Std. Error  z value  Pr(>|z|)       
+#LATE       0.11982    4695          0.4707    0.02695     17.47     2.578e-68  ***
+#Half-BW    0.05991    2363          0.4511    0.03934     11.47     1.974e-30  ***
+#Double-BW  0.23965    9182          0.5119    0.01818     28.15    2.082e-174  ***
+
+#Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+#F-statistics:
+#           F       Num. DoF  Denom. DoF  p
+#LATE        878.0  3         4691        0
+#Half-BW     334.1  3         2359        0
+#Double-BW  2493.8  3         9178        0
+
+
+# ------------------> bandwidth = 0.11982 (optimal)
+
+bandwidth <- 0.11982
+m1 <- RDestimate(myoutcomenext ~ difshare, data=indiv_final, subset=abs(indiv_final$difshare) <= 0.5, bw = bandwidth/3) #other option:  kernel="rectangular"
+plot(m1)
+m2 <- RDestimate(myoutcomenext ~ difshare, data=indiv_final, subset=abs(indiv_final$difshare) <= 0.5)
+plot(m2)
+m3 <- RDestimate(myoutcomenext ~ difshare, data=indiv_final, subset=abs(indiv_final$difshare) <= 0.5, bw = 3*bandwidth)
+plot(m3)
