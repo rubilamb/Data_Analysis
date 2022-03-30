@@ -1,0 +1,227 @@
+rm(list = ls())
+install.packages("rdd")
+library(rdd)
+fastfood <- read_csv("fastfood.csv")
+View(fastfood)
+
+#Question 1 - What is the average difference between the fast-food restaurants 
+# located in NJ and Pennsylvania in terms of the number of full-time employees
+# (before the change in minimum wage)? 
+
+model_1 <- lm(fastfood$empft~fastfood$state)
+summary(model_1)
+
+#Call:
+#  lm(formula = fastfood$empft ~ fastfood$state)
+
+#Residuals:
+#  Min      1Q    Median      3Q     Max 
+#-10.316  -5.715  -2.715   3.385  52.285 
+
+#Coefficients:
+#                Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)     10.3158     0.9894   10.43   <2e-16 ***
+#fastfood$state  -2.6006     1.1020   -2.36   0.0188 *  
+
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 8.626 on 390 degrees of freedom
+#Multiple R-squared:  0.01408,	Adjusted R-squared:  0.01155 
+#F-statistic: 5.569 on 1 and 390 DF,  p-value: 0.01877
+
+
+# ----------> Ans: -2.6006 
+
+#####################################################################
+
+#Question 2: Is this difference statistically significant at the 1% level?
+
+# Difference is not significant at 1% level (0.01) because the p-value is 0.0188. 
+#(null hypothesis says that this difference is 0) and it's larger than 0.01. 
+# So we CAN'T reject the null. But we do at 5%.)
+
+#####################################################################
+
+#Question 3 & 4: Now, let's look at the starting wage. According to the model that 
+#you've run, what is the average wage in Pennsylvania and New Jersey prior to the change?
+
+model_2 <- lm(fastfood$wage_st~fastfood$state)
+summary(model_2)
+
+#Call:
+#  lm(formula = fastfood$wage_st ~ fastfood$state)
+
+#Residuals:
+#  Min      1Q  Median      3Q     Max 
+#-0.3786 -0.3574 -0.1074  0.3426  1.1426 
+
+#Coefficients:
+#               Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)     4.62863    0.04044 114.460   <2e-16 ***
+#fastfood$state -0.02123    0.04509  -0.471    0.638    
+
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.3455 on 371 degrees of freedom
+#(19 observations deleted due to missingness)
+#Multiple R-squared:  0.0005972,	Adjusted R-squared:  -0.002097 
+#F-statistic: 0.2217 on 1 and 371 DF,  p-value: 0.638
+
+# ----------> Ans: avg starting wage (state=0, PA) = 4.62863
+# ----------> avg starting wage (state=1, NJ) = b_0 + b_1*Significant = 4.62863 + (-0.02123)*1 = 4.60707
+
+#####################################################################
+
+#Question 5: Can we reject the null hypothesis that the average starting wage 
+#is the same in NJ and Pennsylvania prior to the change in the minimum wage?
+
+# Can we reject the null hypothesis that the avg starting wage is the same in state=1 and state=0?
+#    To be the same, b_1 must be 0, but its not, it is -0.02123.
+#    No, we CAN'T because the p-value of null hypothesis (when b_1 = 0) is 0.638. 
+#    (big for typical confidence levels)
+
+
+#####################################################################
+
+#Now assume that someone pointed out that the northeast suburbs of Philadelphia 
+#are very different from the rest of Pennsylvania. This person claims that the 
+#model that should be used to estimate the differences between fast food 
+#restaurants located in NJ and PA prior to the change is as follows: 
+
+#   full time employment = b_0 + b_1state + b_2pa1 +b_3pa2 + e
+
+#Question 6: According to this model above, what would be the average difference 
+#in full time employment between the restaurants located in the northeast suburbs 
+#of Philadelphia (pa1) and the rest of Pennsylvania (pa2)?
+
+model_2 <- lm(fastfood$empft ~ fastfood$state + fastfood$pa1 + fastfood$pa2)
+summary(model_2)
+
+#Call:
+#  lm(formula = fastfood$empft ~ fastfood$state + fastfood$pa1 + 
+#       fastfood$pa2)
+
+#Residuals:
+#  Min      1Q     Median      3Q     Max 
+#-10.943  -5.715  -2.715   3.410  52.285 
+
+#Coefficients: (1 not defined because of singularities)
+#                  Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)       9.780      1.348   7.254  2.2e-12 ***
+#fastfood$state   -2.065      1.433  -1.441    0.150    
+#fastfood$pa1      1.162      1.987   0.585    0.559    
+#fastfood$pa2         NA         NA      NA       NA    
+
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 8.633 on 389 degrees of freedom
+#Multiple R-squared:  0.01495,	Adjusted R-squared:  0.009881 
+#F-statistic: 2.951 on 2 and 389 DF,  p-value: 0.05346
+
+#----------> ANSWER: error, not estimable because state, pa1 and pa2 are collinear)
+#### See pa2 output is NA.
+
+#####################################################################
+
+# Now, let's run the difference in differences model to see whether the change 
+# created a difference in the employment. According to what we saw in the lecture, 
+# the model to estimate should be the following: 
+
+# emptft_i_t = b_0 + b_1state_i + b_2post_t + b_3state_i * post_t [equation 1]
+# where post_t is a dummy variable that takes the value of 1 after the change takes place
+
+#Question 7: What is the parameter that captures the differences between New 
+#Jersey and Pennsylvania prior to the implementation of the change?
+
+# Algebraic expressions:
+# ---- E[empft|state=0,post=0] = b_0
+# ---- E[empft|state=1,post=0] = b_0 + b_1
+# ---- E[empft|state=0,post=1] = b_0 + b_2
+# ---- E[empft|state=1,post=1] = b_0 + b_1 + b_2 + b_3
+
+#E[empft|state=1,post=0]-E[empft|state=0, post=0] 
+#    = (b_0 + b_1) - b_0 
+#    = b_1 + b_0 - b_0 
+#    = b_1
+
+#----------> ANSWER: b_1
+
+#####################################################################
+
+# Even though we aim to estimate equation (1), the data we have is "wide," 
+# meaning that we have one observation per fast food restaurant, and the 
+# different yearly observations are in different variables. Model 1 would 
+# require the data to be in the "long" format, with the different years stacked.  
+# We could change the structure of the data to solve this problem.
+
+# Alternatively, someone has suggested that instead we could run the following model:
+
+# empft_i_2 - empft_i_1 = alpha_0 + alpha_1state_i + v_i [equation 2]
+
+# and our estimate for alpha_1 in equation 2 would be equivalent to b_3 in equation 1.
+## Question 8: Is this statement correct? - In other words, is it true that alpha_1
+## in equation 2 is equivalent to b_3 in equation 1?
+
+
+# Algebraic expressions:
+# ---- E[empft|state=0,post=0] = b_0
+# ---- E[empft|state=1,post=0] = b_0 + b_1
+# ---- E[empft|state=0,post=1] = b_0 + b_2
+# ---- E[empft|state=1,post=1] = b_0 + b_1 + b_2 + b_3
+
+# implies that:
+# ---- E[empft|state=1,post=1] - E[empft|state=1,post=0] - E[empft|state=0,post=1] -E [empft|state=0,post=0] 
+# --- = b_0 + b_2 + b_2 + b_3 - b_0 - b_1 + b_0 - b_2 - b_0 
+# --- = b_3
+
+# similarly in equation 2:
+# ---- E[empft_t=2 - empft_t=1|state=0] = alpha_0
+# ---- E[empft_t=2 - empft_t=1|state=1] = alpha_0 + alpha_1
+# ---- E[empft_t=2 - empft_t=1|state=1] - E[empft_t=2 - empft_t=1|state=0]
+# --- = alpha_0 + alpha_1 - alpha_0 
+# --- = alpha_1
+
+##--------------> Thus, alpha_1 = b_3
+#----------> ANSWER: YES. 
+
+###############################################################################
+
+# Question 9: Now estimate model in equation (2) in R. 
+# What value do you obtain for the DiD estimate?
+
+# empft_i_2 - empft_i_1 = alpha_0 + alpha_1state_i + v_i [equation 2]
+
+model_3 <- lm(fastfood$empft2-fastfood$empft ~ fastfood$state)
+summary(model_3)
+
+#Call:
+#  lm(formula = fastfood$empft2 - fastfood$empft ~ fastfood$state)
+
+#Residuals:
+#  Min      1Q  Median      3Q     Max 
+#-32.257  -3.699   0.301   4.301  34.301 
+
+#Coefficients:
+#                Estimate Std. Error t value Pr(>|t|)   
+#(Intercept)      -2.743      1.181  -2.323  0.02071 * 
+#fastfood$state    3.443      1.316   2.617  0.00921 **
+
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 10.3 on 390 degrees of freedom
+#Multiple R-squared:  0.01726,	Adjusted R-squared:  0.01474 
+#F-statistic: 6.849 on 1 and 390 DF,  p-value: 0.009213
+
+# ----------> Answer: 3.443
+
+###############################################################################
+
+# Question 10: Assuming that we can interpret the estimate for alpha_1 as causal and 
+# that the minimum wage for these fast-food restaurants is binding, can you 
+# conclude that the NJ increase in the minimum wage had a negative effect on 
+# full-time employment?
+
+# ----------> Answer: No. Even though we can reject the null hypothesis that 
+# alpha_1=0 at the 5% level, the estimate for this parameter is positive. 
+# Thus, we are finding that the increase in the minimum wage led to an increase 
+# in full-time employment.
