@@ -1,0 +1,380 @@
+rm(list = ls())
+library(readr)
+census80 <- read_csv("census80.csv")
+View(census80)
+
+#-------------------------------------------------------
+# Question 1 using summary command
+
+summary(census80)
+
+#workedm           weeksm          whitem           blackm           hispm            othracem           sex1st      
+#Min.   :0.0000   Min.   : 0.00   Min.   :0.0000   Min.   :0.0000   Min.   :0.00000   Min.   :0.00000   Min.   :0.0000  
+#1st Qu.:0.0000   1st Qu.: 0.00   1st Qu.:1.0000   1st Qu.:0.0000   1st Qu.:0.00000   1st Qu.:0.00000   1st Qu.:0.0000  
+#Median :1.0000   Median :12.00   Median :1.0000   Median :0.0000   Median :0.00000   Median :0.00000   Median :0.0000  
+#Mean   :0.5716   Mean   :20.82   Mean   :0.8314   Mean   :0.1125   Mean   :0.02725   Mean   :0.02886   Mean   :0.4871  
+#3rd Qu.:1.0000   3rd Qu.:48.00   3rd Qu.:1.0000   3rd Qu.:0.0000   3rd Qu.:0.00000   3rd Qu.:0.00000   3rd Qu.:1.0000  
+#Max.   :1.0000   Max.   :52.00   Max.   :1.0000   Max.   :1.0000   Max.   :1.00000   Max.   :1.00000   Max.   :1.0000  
+
+#sex2nd          ageq2nd         ageq3rd         numberkids   
+#Min.   :0.0000   Min.   : 0.00   Min.   : 0.00    Min.   :2.000  
+#1st Qu.:0.0000   1st Qu.: 9.00   1st Qu.: 5.00    1st Qu.:2.000  
+#Median :0.0000   Median :19.00   Median :13.00    Median :2.000  
+#Mean   :0.4881   Mean   :21.75   Mean   :16.59    Mean   :2.286  
+#3rd Qu.:1.0000   3rd Qu.:33.00   3rd Qu.:26.00    3rd Qu.:3.000  
+#Max.   :1.0000   Max.   :71.00   Max.   :67.00    Max.   :3.000  
+#NA's   :305132   
+
+
+# -----------> Fraction of mothers that work? Ans: 0.5716
+# -----------> 3rd quartile of weeks worked? Ans: 48.00
+# -----------> Proportion of hispanic mothers? Ans: 0.02725
+# -----------> Median age of the second child in quarters: 19.00 
+
+#############################################################################
+
+#Question 2: Use the variable ageq2nd and the variable ageq3rd to construct an 
+#indicator variable on whether there was a multiple pregnancy during the mother's 
+#second pregnancy. What is the proportion of households with a multiple pregnancy in the second pregnancy?
+
+#Loading Required Library
+library("AER")
+
+#Constructing an Indicator Variable Using ageq2nd and age3rd variables
+census80$three <- (census80$numberkids==3)
+census80$temp[census80$ageq2nd == census80$ageq3rd] <- 1 #Creating a temporary vector that meets the given criteria
+census80$multiple <- 0 
+census80$multiple[census80$temp == 1] <- 1
+summary(census80$multiple)
+
+#  Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#0.00000 0.00000 0.00000 0.00729 0.00000 1.00000 
+
+# --------------------> Ans: 0.00729
+
+#############################################################################
+
+#Question 3: Use the variables sex1st and sex2nd to construct an indicator 
+#variable on whether the first and the second born children have the same sex. 
+#What is the proportion of households in which the first two children have the 
+#same sex?
+
+#Constructing an Indicator Variable Using sex1st and sex2nd variables
+census80$samesex <- (census80$sex1st == census80$sex2nd) 
+census80$samesex[census80$samesex == FALSE] <- 0
+census80$samesex[census80$samesex == TRUE] <- 1
+summary(census80$samesex)
+
+#   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 0.0000  0.0000  1.0000  0.5019  1.0000  1.0000 
+
+# --------------------> Ans: 0.5019
+
+
+#############################################################################
+
+# Question 4: Run this model through OLS using whether the mom works and the 
+# number of weeks she works as the dependent variables. According to your 
+# estimates, which of the following statements are correct?
+
+# laborsupplyh = α0 + α1•1 3childrenh + α2 blackmotherh + α3 hispanicmotherh + α4 otherraceh + εh(equation 1)
+
+# laborsupplyh corresponds to a labor supply variable of the mother in household h,
+# α1•1 3childrenh is an indicator on whether there are three children born in the households, and
+# the other variables correspond to the race categories of the mother.
+
+
+# First create a variable to suggest the family has 3 children
+
+census80$three <- (census80$numberkids==3)
+census80$three[census80$numberkids == FALSE] <- 0
+census80$three[census80$numberkids == TRUE] <- 1
+summary(census80$three)
+
+#  Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#0.0000  0.0000  0.0000  0.2861  1.0000  1.0000 
+
+# Running the OLS Model
+ols1 <- lm (census80$workedm ~ census80$three + census80$blackm + census80$hispm + census80$othracem)
+summary(ols1)
+
+#Call:
+#  lm(formula = census80$workedm ~ census80$three + census80$blackm + 
+#       census80$hispm + census80$othracem)
+
+#Residuals:
+#  Min      1Q  Median      3Q     Max 
+#-0.7091 -0.5818  0.3748  0.4182  0.5360 
+
+#Coefficients:
+#                       Estimate Std. Error t value Pr(>|t|)    
+#  (Intercept)        0.5818322  0.0009448 615.853  < 2e-16 ***
+#  census80$three    -0.0839132  0.0016669 -50.340  < 2e-16 ***
+#  census80$blackm    0.1272585  0.0023926  53.189  < 2e-16 ***
+#  census80$hispm    -0.0339241  0.0046329  -7.322 2.44e-13 ***
+#  census80$othracem  0.0146186  0.0045045   3.245  0.00117 ** 
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.4918 on 427413 degrees of freedom
+#Multiple R-squared:  0.01218,	Adjusted R-squared:  0.01217 
+#F-statistic:  1318 on 4 and 427413 DF,  p-value: < 2.2e-16
+
+# --------------------> Ans: According to the OLS estimates, having a third 
+# child reduces the likelihood that the mother works by 8.39 percentage points.
+
+
+#Now to find out the exact number of weeks reduced from having a third child.
+
+# Creating an empty matrix
+OLS <- matrix(ncol = 2, nrow = 2, data = NA) #creating an empty matrix to input my answer
+
+#Inputting the values of my interest in the empty matrix
+OLS[1, 1] <- ols1$coefficients[2] #1st value, in first row X first column
+pvalue <- summary(ols1)
+OLS[2, 1] <- pvalue$coefficients[2,4]#2nd value in second row X first column
+
+#ols for number of weeks worked
+ols2 <- lm (census80$weeksm ~ census80$three + census80$blackm + census80$hispm + census80$othracem)
+summary(ols2)
+
+#Call:
+#  lm(formula = census80$weeksm ~ census80$three + census80$blackm + 
+#       census80$hispm + census80$othracem)
+
+#Residuals:
+#  Min      1Q  Median      3Q     Max 
+#-28.245 -21.133  -9.133  23.755  36.220 
+
+#Coefficients:
+#                   Estimate Std. Error t value Pr(>|t|)    
+#  (Intercept)       21.13285    0.04218 501.034  < 2e-16 ***
+#  census80$three    -3.94018    0.07442 -52.946  < 2e-16 ***
+#  census80$blackm    7.11253    0.10682  66.587  < 2e-16 ***
+#  census80$hispm    -1.41237    0.20684  -6.829 8.59e-12 ***
+#  census80$othracem  1.69773    0.20110   8.442  < 2e-16 ***
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 21.96 on 427413 degrees of freedom
+#Multiple R-squared:  0.01634,	Adjusted R-squared:  0.01633 
+#F-statistic:  1775 on 4 and 427413 DF,  p-value: < 2.2e-16
+
+#Inputting the values of weeks worked (weeksm) into the matrix 
+OLS[1, 2] <- ols2$coefficients[2] # 3rd value in 1st row second column
+pvalue <- summary(ols2)
+OLS[2, 2] <- pvalue$coefficients[2, 4] #4th value in 2nd row second column
+OLS
+
+#        [,1]      [,2]
+#[1,] -0.0839132 -3.940177
+#[2,]  0.0000000  0.000000
+
+# --------------------> Ans: According to the OLS estimates, having a third child 
+# reduces the number of weeks a mother decides to work by 3.94 weeks.
+
+
+######################################################################
+
+#Since fertility is an endogenous variable, we want to use the multiple pregnancy 
+#and the same sex variables as instruments for having three children in the household. 
+#We are going to estimate the first-stage using each variable separately. 
+#Run a regression for each of these instruments using the indicator of having 
+#three children as the dependent variable and controlling for the race of the mother. 
+
+# Question 5: According to your estimates, by having a multiple pregnancy during 
+# the second pregnancy, by how many percentage points does the likelihood of having 
+# a third child increase?
+
+ols3 <- lm(three ~ multiple + blackm + hispm + othracem, data=census80)
+summary(ols3)
+
+#Call:
+#  lm(formula = three ~ multiple + blackm + hispm + othracem, data = census80)
+
+#Residuals:
+#  Min      1Q  Median      3Q     Max 
+#-0.3528 -0.2710 -0.2710  0.6641  0.7290 
+
+#Coefficients:
+#                Estimate Std. Error t value Pr(>|t|)    
+#  (Intercept) 0.2710109  0.0007523 360.242  < 2e-16 ***
+#  multiple    0.7179404  0.0080400  89.296  < 2e-16 ***
+#  blackm      0.0648870  0.0021730  29.860  < 2e-16 ***
+#  hispm       0.0817475  0.0042103  19.416  < 2e-16 ***
+#  othracem    0.0115414  0.0040954   2.818  0.00483 ** 
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.4472 on 427413 degrees of freedom
+#Multiple R-squared:  0.02108,	Adjusted R-squared:  0.02107 
+#F-statistic:  2301 on 4 and 427413 DF,  p-value: < 2.2e-16
+
+# --------------------> Ans: 0.7179404 in percentage points = 71.79%
+
+#######################################################################
+
+# Question 6: According to your estimates, when the first two children are 
+# of the same sex, by how many percentage points does the likelihood of 
+# having a third child increase?
+
+ols4 <- lm(three ~ samesex + blackm + hispm + othracem, data=census80)
+summary(ols4)
+
+#Call:
+#lm(formula = three ~ samesex + blackm + hispm + othracem, data = census80)
+
+#Residuals:
+#  Min      1Q  Median      3Q     Max 
+#-0.3823 -0.3005 -0.2515  0.6825  0.7485 
+
+#Coefficients:
+#              Estimate Std. Error t value Pr(>|t|)    
+#  (Intercept) 0.251535   0.001025  245.42  < 2e-16 ***
+#  samesex     0.049018   0.001379   35.56  < 2e-16 ***
+#  blackm      0.065954   0.002190   30.12  < 2e-16 ***
+#  hispm       0.081736   0.004243   19.26  < 2e-16 ***
+#  othracem    0.011183   0.004127    2.71  0.00674 ** 
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.4506 on 427413 degrees of freedom
+#Multiple R-squared:  0.005756,	Adjusted R-squared:  0.005746 
+#F-statistic: 618.6 on 4 and 427413 DF,  p-value: < 2.2e-16
+
+# --------------------> Ans: 0.049018  in percentage points = 4.902%
+
+###########################################################################
+
+# Question 7: Now, run the IV regression using whether the mother works as the 
+# dependent variable and multiple pregnancy as the instrument. 
+# According to this model, by how many percentage points does the likelihood 
+# that the mother works change when a third child is born?
+
+#IV where mothers work (workedm)
+iv1 <- ivreg(workedm ~ three + blackm + hispm + othracem | blackm + hispm + othracem + multiple, data = census80)
+summary(iv1)
+
+#Call:
+#  ivreg(formula = workedm ~ three + blackm + hispm + othracem | 
+#          blackm + hispm + othracem + multiple, data = census80)
+
+#Residuals:
+#  Min      1Q  Median      3Q     Max 
+#-0.7023 -0.5764  0.3618  0.4236  0.5233 
+
+#Coefficients:
+#              Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)  0.576368   0.003501 164.650  < 2e-16 ***
+#  three       -0.064126   0.012319  -5.205 1.94e-07 ***
+#  blackm       0.125953   0.002525  49.885  < 2e-16 ***
+#  hispm       -0.035536   0.004739  -7.498 6.47e-14 ***
+#  othracem     0.014401   0.004507   3.195   0.0014 ** 
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.4919 on 427413 degrees of freedom
+#Multiple R-Squared: 0.01186,	Adjusted R-squared: 0.01185 
+#Wald test: 690.7 on 4 and 427413 DF,  p-value: < 2.2e-16 
+
+# --------------------> Ans: -0.064126 in percentage points = -6.413%
+
+#To find out the reduction by how many weeks (in matrix form)
+
+iv2 <- ivreg(weeksm ~ three + blackm + hispm + othracem | blackm + hispm + othracem + multiple, data = census80)
+summary(iv2)
+
+iv <- matrix(ncol=2, nrow=2, data= NA)
+
+iv[1,1] <- iv1$coefficients[2]
+pvalue <- summary(iv1)
+iv[2,1] <- pvalue$coefficients[2,4]
+
+iv[1,2] <- iv2$coefficients[2]
+pvalue1 <- summary(iv2)
+iv[2,2] <- pvalue1$coefficients[2,4]
+iv
+
+#         [,1]          [,2]
+#[1,]  -6.412559e-02 -3.137654e+00
+#[2,]  1.938109e-07  1.163927e-08
+
+# --------------------> Ans: reduction of 6.413% is a reduction of 3.14 weeks
+
+##############################################################################
+
+# Question 8: Now, run the IV regression using whether the mother works as the 
+# dependent variable and the same-sex variable as the instrument. 
+# According to this model, how does the likelihood that the mother works 
+# change when a third child is born?
+
+iv3 <- ivreg(workedm ~ three + blackm + hispm + othracem | blackm + hispm + othracem + samesex, data = census80)
+summary(iv3)
+
+#Call:
+#  ivreg(formula = workedm ~ three + blackm + hispm + othracem | 
+#          blackm + hispm + othracem + samesex, data = census80)
+
+#Residuals:
+#   Min      1Q  Median      3Q     Max 
+#-0.7140 -0.5858  0.3842  0.4142  0.5452 
+
+#Coefficients:
+#              Estimate Std. Error t value Pr(>|t|)    
+#  (Intercept)  0.585783   0.008517  68.779  < 2e-16 ***
+#   three       -0.098221   0.030697  -3.200  0.00138 ** 
+#  blackm       0.128203   0.003133  40.920  < 2e-16 ***
+#  hispm       -0.032758   0.005264  -6.224 4.86e-10 ***
+#  othracem     0.014776   0.004518   3.271  0.00107 ** 
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 0.4919 on 427413 degrees of freedom
+#Multiple R-Squared: 0.01201,	Adjusted R-squared: 0.012 
+#Wald test: 686.6 on 4 and 427413 DF,  p-value: < 2.2e-16 
+
+# --------------------> Ans: -0.098221 in percentage points = -9.822
+
+#To find out the reduction by how many weeks (in matrix form)
+
+iv4 <- matrix(ncol=2,nrow=2, data=NA)
+
+iv4[1,1] <- iv3$coefficients[2] 
+pvalue3 <- summary(iv3)
+iv4[2,1] <- pvalue3$coefficients[2,4]
+
+iv5 <- ivreg(weeksm ~ three + blackm + hispm + othracem | blackm + hispm + othracem + samesex, data = census80)
+summary(iv5)
+
+iv4[1,2] <- iv5$coefficients[2]
+pvalue4 <- summary(iv5)
+iv4[2,2] <- pvalue4$coefficients[2,4]
+
+iv4
+#         [,1]          [,2]
+#[1,] -0.098220536 -4.9942987627
+#[2,]  0.001375893  0.0002687637
+
+# --------------------> Ans:  reduction of 9.822% is a reduction of 4.99 weeks
+
+#########################################################################
+
+# Question 9: As you should see, the following relationship holds between the 
+# point estimates of the three strategies that we have used: 
+# αIV−multiple1≤αOLS1≤α^IV−samesex1. 
+# Assuming a model of heterogeneous effects, what might explain these differences?
+
+# IV estimates are local treatment effects. Thus, we are identifying the effect 
+# of fertility over women who have a third child when the relevant instrument changes.
+
+# Why?
+  
+# Under heterogeneous effects, IV estimates correspond to LATE (local average treatment effects). 
+# Thus, we are able to identify the average effect over the population that decides 
+# to have a third child when the instrument is switched on. This implies, that 
+# α^IV−multiple1=0.06412559 is the treatment effect on those that have a third child due to a multiple pregnancy. 
+# In general, for most of the population, having a multiple pregnancy would imply having a third child. 
+# On the other hand, α^IV−samesex1=0.098220536 corresponds to the treatment effect on 
+# those that decide to have a third child when the first two children have the same sex.
+
+############################################################################
