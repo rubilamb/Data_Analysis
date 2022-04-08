@@ -83,41 +83,41 @@ F-statistic:     3 on 1 and 1 DF,  p-value: 0.3333
 #-------------------------------------------------------------------------------
 #perform linear regression of the impact of purchasing practice on sector risk
 
-model_3_gb_certified <- lm(gb_certified$ip_mean~gb_certified$p_mean)
+model_3_gb_certified <- lm(gb_certified$p_mean~gb_certified$ip_mean)
 summary(model_3_gb_certified)
 
 Call:
-lm(formula = gb_certified$ip_mean ~ gb_certified$p_mean)
+lm(formula = gb_certified$p_mean ~ gb_certified$ip_mean)
 
 Residuals:
-         1          2          3 
- 3.469e-18 -3.333e-02  3.333e-02 
+        1         2         3 
+ 0.009524  0.002381 -0.011905 
 
 Coefficients:
-                    Estimate Std. Error t value Pr(>|t|)
-(Intercept)          -0.4833     1.3474  -0.359    0.781
-gb_certified$p_mean   2.0000     2.3094   0.866    0.546
+                     Estimate Std. Error t value Pr(>|t|)
+(Intercept)            0.4369     0.1693   2.580    0.235
+gb_certified$ip_mean   0.2143     0.2474   0.866    0.546
 
-Residual standard error: 0.04714 on 1 degrees of freedom
+Residual standard error: 0.01543 on 1 degrees of freedom
 Multiple R-squared:  0.4286,	Adjusted R-squared:  -0.1429 
 F-statistic:  0.75 on 1 and 1 DF,  p-value: 0.5456
 
-model_3_not_gb_certified <- lm(gb_not_certified$ip_mean~gb_not_certified$p_mean)
+model_3_not_gb_certified <- lm(gb_not_certified$p_mean~gb_not_certified$ip_mean)
 summary(model_3_not_gb_certified)
 
 Call:
-lm(formula = gb_not_certified$ip_mean ~ gb_not_certified$p_mean)
+lm(formula = gb_not_certified$p_mean ~ gb_not_certified$ip_mean)
 
 Residuals:
-         1          2          3 
- 4.167e-02 -4.167e-02  2.151e-16 
+        1         2         3 
+-0.004098  0.009221 -0.005123 
 
 Coefficients:
-                        Estimate Std. Error t value Pr(>|t|)
-(Intercept)               -1.358      1.275  -1.065    0.480
-gb_not_certified$p_mean    4.333      2.887   1.501    0.374
+                         Estimate Std. Error t value Pr(>|t|)
+(Intercept)               0.35287    0.05951   5.929    0.106
+gb_not_certified$ip_mean  0.15984    0.10648   1.501    0.374
 
-Residual standard error: 0.05893 on 1 degrees of freedom
+Residual standard error: 0.01132 on 1 degrees of freedom
 Multiple R-squared:  0.6926,	Adjusted R-squared:  0.3852 
 F-statistic: 2.253 on 1 and 1 DF,  p-value: 0.3741
 
@@ -125,45 +125,47 @@ F-statistic: 2.253 on 1 and 1 DF,  p-value: 0.3741
 
 #Perform linear regression on the impact of enterprise purchasing on supplier's operations
 
-model_4 <- lm(supplier$ips_mean~supplier$p_mean)
+model_4 <- lm(supplier$p_mean~supplier$ips_mean)
 summary(model_4)
 
 Call:
-lm(formula = supplier$ips_mean ~ supplier$p_mean)
+lm(formula = supplier$p_mean ~ supplier$ips_mean)
 
 Residuals:
-     Min       1Q   Median       3Q      Max 
--0.08056 -0.06389  0.01111  0.05278  0.08611 
+      Min        1Q    Median        3Q       Max 
+-0.010595 -0.008452  0.000119  0.009405  0.011548 
 
 Coefficients:
-                Estimate Std. Error t value Pr(>|t|)
-(Intercept)       -1.811      1.476  -1.227    0.259
-supplier$p_mean    3.750      2.515   1.491    0.180
+                  Estimate Std. Error t value Pr(>|t|)    
+(Intercept)        0.56167    0.01705  32.941 6.15e-09 ***
+supplier$ips_mean  0.06429    0.04311   1.491     0.18    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 0.07113 on 7 degrees of freedom
+Residual standard error: 0.009313 on 7 degrees of freedom
 Multiple R-squared:  0.2411,	Adjusted R-squared:  0.1327 
 F-statistic: 2.224 on 1 and 7 DF,  p-value: 0.1795
 
 
-model_5 <- lm(supplier$is_mean~supplier$ips_mean+supplier$p_mean)
+model_5 <- lm(supplier$p_mean~supplier$is_mean+supplier$ips_mean)
 summary(model_5)
 
 Call:
-lm(formula = supplier$is_mean ~ supplier$ips_mean + supplier$p_mean)
+lm(formula = supplier$p_mean ~ supplier$ips_mean + supplier$is_mean)
 
 Residuals:
-     Min       1Q   Median       3Q      Max 
--0.07030 -0.05646  0.02426  0.03482  0.06609 
+       Min         1Q     Median         3Q        Max 
+-0.0106967 -0.0085970  0.0001334  0.0093033  0.0114030 
 
 Coefficients:
-                  Estimate Std. Error t value Pr(>|t|)  
-(Intercept)         0.2463     1.3178   0.187   0.8579  
-supplier$ips_mean   0.8170     0.3062   2.668   0.0371 *
-supplier$p_mean     0.1307     2.3387   0.056   0.9572  
+                  Estimate Std. Error t value Pr(>|t|)    
+(Intercept)       0.560394   0.029287  19.135 1.32e-06 ***
+supplier$ips_mean 0.061000   0.074990   0.813    0.447    
+supplier$is_mean  0.003981   0.071227   0.056    0.957    
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 0.05763 on 6 degrees of freedom
-Multiple R-squared:  0.6148,	Adjusted R-squared:  0.4864 
-F-statistic: 4.788 on 2 and 6 DF,  p-value: 0.05715
+Residual standard error: 0.01006 on 6 degrees of freedom
+Multiple R-squared:  0.2415,	Adjusted R-squared:  -0.01138 
+F-statistic: 0.955 on 2 and 6 DF,  p-value: 0.4364
 
