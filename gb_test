@@ -1,0 +1,85 @@
+rm(list = ls())
+supplier <- read_excel("gb_fake_data_suppliers.xlsx")
+enterprise <- read_excel("gb_fake_data_enterprise.xlsx")
+library(dplyr)
+
+#Aggregate Degree of due diligence for GB-certified eand not certified nterprises
+
+gb_certified <- filter(enterprise, gb_cert==1)
+print(gb_certified)
+mean(gb_certified$d_mean)
+# 0.6611111
+
+gb_not_certified <- filter(enterprise, gb_cert==0)
+print(gb_not_certified)
+mean(gb_not_certified$d_mean)
+# 0.4166667
+
+#--------------------------------------------------------------------------
+#Perform linear regression effect of due diligence from gb certification
+model_1 <- lm(enterprise$d_mean~enterprise$gb_cert)
+summary(model_1)
+
+Call:
+lm(formula = enterprise$d_mean ~ enterprise$gb_cert)
+
+Residuals:
+         1          2          3          4          5          6 
+ 3.889e-02 -1.111e-02 -2.778e-02  3.333e-02  1.735e-18 -3.333e-02 
+
+Coefficients:
+                   Estimate Std. Error t value Pr(>|t|)    
+(Intercept)         0.41667    0.01964   21.21 2.92e-05 ***
+enterprise$gb_cert  0.24444    0.02778    8.80  0.00092 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.03402 on 4 degrees of freedom
+Multiple R-squared:  0.9509,	Adjusted R-squared:  0.9386 
+F-statistic: 77.44 on 1 and 4 DF,  p-value: 0.0009199
+
+#-----------------------------------------------------------------------------
+
+#Perform linear regression of the impact of due diligence to purchasing practice
+
+model_2_gb_certified <- lm(gb_certified$p_mean~gb_certified$d_mean)
+summary(model_2_gb_certified)
+
+Call:
+lm(formula = gb_certified$p_mean ~ gb_certified$d_mean)
+
+Residuals:
+         1          2          3 
+ 0.0009615 -0.0038462  0.0028846 
+
+Coefficients:
+                    Estimate Std. Error t value Pr(>|t|)
+(Intercept)          0.31635    0.06612   4.784    0.131
+gb_certified$d_mean  0.40385    0.09993   4.041    0.154
+
+Residual standard error: 0.004903 on 1 degrees of freedom
+Multiple R-squared:  0.9423,	Adjusted R-squared:  0.8846 
+F-statistic: 16.33 on 1 and 1 DF,  p-value: 0.1544
+
+model_2_not_gb_certified <- lm(gb_not_certified$p_mean~gb_not_certified$d_mean)
+summary(model_2_not_gb_certified)
+
+Call:
+lm(formula = gb_not_certified$p_mean ~ gb_not_certified$d_mean)
+
+Residuals:
+        1         2         3 
+-0.004167  0.008333 -0.004167 
+
+Coefficients:
+                        Estimate Std. Error t value Pr(>|t|)
+(Intercept)               0.2854     0.0904   3.157    0.195
+gb_not_certified$d_mean   0.3750     0.2165   1.732    0.333
+
+Residual standard error: 0.01021 on 1 degrees of freedom
+Multiple R-squared:   0.75,	Adjusted R-squared:    0.5 
+F-statistic:     3 on 1 and 1 DF,  p-value: 0.3333
+
+#-------------------------------------------------------------------------------
+
+
