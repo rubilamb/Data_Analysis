@@ -1,0 +1,592 @@
+#Probability Primer
+
+#P.1:
+# You are organizing an outdoor concert for next week and believe attendance 
+# will depend on the weather. You consider the following possibilities are appropriate:
+
+rm(list = ls())
+
+Table_P1 <- matrix(nrow=3, ncol=3, data=NA)
+colnames(Table_P1) <- c('Weather', 'Probability=f_x', 'Attendence=X')
+Table_P1[1:3] <- c("Terrible","Mediocre","Great")
+Table_P1[1,2] <- 0.2
+Table_P1[1,3] <- 500
+Table_P1[2,2] <- 0.6
+Table_P1[2,3] <- 1000
+Table_P1[3,2] <- 0.2
+Table_P1[3,3] <- 2000
+Table_P1
+
+#       Weather    Probability=f_x Attendence=X
+#      "Terrible"    "0.2"           "500"       
+#     "Mediocre"     "0.6"           "1000"      
+#        "Great"     "0.2"           "2000" 
+
+# (a) Let X denote the attendance. Why is X a random variable?
+# X is a random variable because attendance is not known prior to the outdoor concert. Before the concert, attendance is uncertain because the weather is uncertain.
+
+# (b) What is the expected attendance?
+Expected_attendance <- sum(500*0.2,1000*0.6,2000*0.2)
+Expected_attendance
+# [1] 1100
+
+# (c) Suppose that each ticket costs $5 and that the total cost of giving the concert is
+# a fixed $2,000. Let Y = profit = total sales revenue – total cost = 5X - 2000.
+# What is the expected profit?
+
+#Profit_Y = 5X -2000
+Profit_Y <- 5*Expected_attendance - 2000
+Profit_Y
+# [1] 3500
+
+# (d) If the variance of attendance is sigma^2 = 240,000, find the variance of profit Y.
+
+#Profit_Y = 5X -2000
+# Var(Y) = constant^2 * Var(X)
+constant <- 5
+Var_X <- 240000
+
+Var_Profit_Y <- constant^2 * Var_X
+Var_Profit_Y
+# 6,000,000
+
+#-------------------------------------------------------------------------------
+
+#P.3: 
+#A firm’s marketing manager believes that total sales X can be modeled 
+#using a normal distribution with mean mu= $2.5 million and standard deviation 
+#sigma= $300,000. What is the probability that the firm’s sales will exceed 
+#$3 million? Draw a sketch to illustrate your calculation.
+
+1-pnorm(3000000,2500000,300000)
+#0.04779035
+
+#Formula: X-mu/sigma
+#sigma is the SD
+
+#3m - 2.5m / 300,00
+#= 1.67
+
+#Look down Z table for 
+#1.6 and 0.07 and you get: 0.9525
+
+#Take 1- 0.9525 = 0.0475
+
+#------------------------------------------------------------------------
+
+#P.5:
+# Before the 2009 Super Bowl there was a coin flip to determine who kicked off and who received. 
+# The NFC (National Football Conference) had won 11 prior coin flips. 
+
+# (a) Given that the NFC had won 11 straight flips, what is the probability that they would win the 12th flip? Explain.
+# (b) Before the 2010 SuperBowl(won by the New Orleans Saints)the NFC won the coin toss for the 13th consecutive time. 
+# What is the probability that the NFC will win the next two consecutive tosses?
+
+# (a) The probability that the NFC wins the 12th flip, given they have won the previous 11 flips is 0.5. 
+# Each flip is independent; so the probability of winning any flip is 0.5 irrespective of the outcomes of previous flips.
+
+# (b) Given that the outcome is independent, each win outcome is 0.5. For 2 tosses take 0.5 x 0.5 = 0.25.
+
+#------------------------------------------------------------------------
+
+#P.6
+#At supermarkets in a Midwestern city the sales of canned tuna varies from week to week. Marketing researchers have determined that there is a relationship between sales of canned tuna and the price of canned tuna. Specifically, SALES 1⁄4 40710 􏰃 430PRICE where SALES are cans sold per week and PRICE is measured in cents per can. Suppose PRICE over the year can be considered (approximately) a normal random variable with mean m 1⁄4 75 cents and standard deviation s 1⁄4 5 cents. That is PRICE ~ N(75, 25).
+#(a) What is the numerical expected value of SALES? Show your work.
+#(b) What is the numerical value of the variance of SALES? Show your work.
+#(c) Find the probability that more than 6,300 cans are sold in a week.Draw a sketch illustrating the calculation.
+
+#formula: SALES = 40710 - 430*PRICE
+#PRICE ~ N(75,25) 
+
+rm(list = ls())
+mean_mu <- 75
+var_sigma_sq <- 25
+sd_sigma <- 5
+
+#(a)
+E_PRICE <- mean_mu # E(PRICE) = mean_mu
+
+answer_a <- 40710-430*E_PRICE
+answer_a 
+# [1] 8460
+
+#(b)
+constant <- 430 #taken from Formula for SALES= 40710 - 430*PRICE
+# VAR(Y) = constant^2 * VAR(X)
+
+answer_b <- constant^2 * var_sigma_sq
+answer_b 
+# [1] 4622500
+
+#(c)
+# P(SALES > 6300) = P (Z >= constant_s - mu_s / sigma_s)
+constant_s <- 6300
+mu_s <- answer_a
+sigma_s <- sqrt(answer_b)
+
+answer_c <- (constant_s - mu_s) / sigma_s
+answer_c
+# [1] -1.004651
+pnorm(1.004651) #look up in Z-table
+# [1] 0.8424675
+
+# manually looking at the Z table for 1.004651, which is now SALES < 1.004651, 
+# is equal to : 0.8425 
+
+#--------------------------------------------------------------------------
+
+#P.7
+# ‘‘Charley Chicken’’ and ‘‘Bradley Bee’’ are brands of canned tuna. During a week a certain amount of advertising appears for these products. 
+# There may be no advertising, one form of advertising (newspaper coupon), or two forms (coupon and a special store display). Let C denote the 
+# level of advertising for Charley Chicken. It can take the values c 1⁄4 0, 1 or 2. Let B denote the level of advertising of Bradley Bee; B can 
+# take the values b 1⁄4 0, 1 or 2. 
+
+# Suppose the following table represents the joint probability distribution of the advertising levels for these two brands of canned tuna.
+
+table <- matrix (c(0.05,0.05,0.05, 0.05, 0.20, 0.15, 0.05, 0.25, 0.15), ncol=3, byrow=TRUE)
+colnames(table) <- c('0', '1', '2')
+rownames(table) <- c('0', '1', '2')
+table <- as.table(table)
+table
+
+#      B1   B2   B3
+# C1 0.05 0.05 0.05
+# C2 0.05 0.20 0.15
+# C3 0.05 0.25 0.15
+
+# (a) What is the marginal probability distribution of Charley Chicken advertising,C?
+#f(c) and f(b) for each row and column
+
+fc_1 <- sum(0.05, 0.05, 0.05)
+fc_1 #0.15
+
+fc_2 <- sum(0.05, 0.20, 0.15)
+fc_2 #0.4
+
+fc_3 <- sum(0.05, 0.25, 0.15)
+fc_3 #0.45
+
+f_c <- c(0.15,0.4,0.45)
+cbind(table,f_c)
+
+#     0    1    2  f_c
+# 0 0.05 0.05 0.05 0.15
+# 1 0.05 0.20 0.15 0.40
+# 2 0.05 0.25 0.15 0.45
+
+fb_1 <- sum(0.05, 0.05, 0.05)
+fb_2 <- sum(0.05, 0.20, 0.25)
+fb_3 <- sum(0.05, 0.15, 0.15)
+
+f_b <- c(fb_1, fb_2, fb_3)
+rbind(table,f_b)
+
+#       0    1    2
+# 0   0.05 0.05 0.05
+# 1   0.05 0.20 0.15
+# 2   0.05 0.25 0.15
+# f_b 0.15 0.50 0.35
+
+# (b) What is the expected value of C?
+
+#     0    1    2  f_c
+# 0 0.05 0.05 0.05 0.15
+# 1 0.05 0.20 0.15 0.40
+# 2 0.05 0.25 0.15 0.45
+
+Expected_Value_C <- (0*0.15)+(1*0.40)+(2*0.45)
+Expected_Value_C
+# [1] 1.3
+
+# (c) What is the variance of C? 
+
+# Var(X) = E(X^2) - [E(X)]^2
+
+Variance_C <- (0^2*0.15)+(1^2*0.40)+(2^2*0.45) - Expected_Value_C^2
+Variance_C
+# [1] 0.51
+
+# (d) Are the two companies’ advertising strategies statistically independent? Explain.
+# the two companies’ advertising strategies are not independent.
+# If independent, condition must hold as f(C,B) = f(C)*f(B)
+
+# (e) Bradley Bee pays its advertising firm $5,000 per week plus $1,000 for each level of 
+# advertising B. What is the probability distribution of Bradley Bee’s advertising outlay, A?
+
+# A = 5000 + 1000*B
+
+Table_2 <- matrix(ncol=2, nrow=3, data=NA)
+colnames(Table_2) <- c("A", "f_a")
+Table_2[1:3] <- c(5000,5000+1000*1,5000+1000*2)
+Table_2[1,2] <- fb_1
+Table_2[2,2] <- fb_2
+Table_2[3,2] <- fb_3
+print(Table_2)
+
+# Therefore the distribution is:
+#   A    f_a
+# 5000  0.15
+# 6000  0.50
+# 7000  0.35
+
+#-----------------------------------------------------------------------------
+
+#P.8
+# Let X be a discrete random variable that is the value shown on a single roll of a fair die.
+
+# Represent the probability density function f(x) in tabular form.
+
+rm(list = ls())
+library(tibble)
+Table_P8 <- matrix(nrow=6, ncol=2, data=NA)
+colnames(Table_P8) <- c("X", "f_x")
+Table_P8[1:6] <- c(seq(1:6))
+Table_P8[1,2] <- "1/6"
+Table_P8[2,2] <- "1/6"
+Table_P8[3,2] <- "1/6"
+Table_P8[4,2] <- "1/6"
+Table_P8[5,2] <- "1/6"
+Table_P8[6,2] <- "1/6"
+
+print(Table_P8)
+
+#  X   f_x  
+# "1" "1/6"
+# "2" "1/6"
+# "3" "1/6"
+# "4" "1/6"
+# "5" "1/6"
+# "6" "1/6"
+
+# (b) What is the probability that X=4? That X=4 or X=5?
+
+Prob_x_equal_4 <- 1/6
+
+Prob_x_equal_4_or_5 <- 1/6+1/6
+# 2/6 = 1/3
+
+# (c) What is the expected value of X? Explain the meaning of E(X) in this case.
+
+Expected_Value_X = 1*1/6+2*1/6+3*1/6+4*1/6+5*1/6+6*1/6
+Expected_Value_X
+# [1] 3.5
+
+# (d) Find the expected value of X^2.
+
+Expected_Value_X_sq <- 1^2*1/6+2^2*1/6+3^2*1/6+4^2*1/6+5^2*1/6+6^2*1/6
+Expected_Value_X_sq
+# [1] 15.16667
+
+# (e) Find the variance of X.
+
+Variance_X <- Expected_Value_X_sq - Expected_Value_X^2
+Variance_X
+# [1] 2.916667
+
+# (f) Obtain a die. Roll it 20 times and record the values obtained. 
+# What is the average of the first 5 values? The first 10? 
+# What is the average of the 20 rolls?
+
+X_sample_20 <- sample(1:6, 20, TRUE)
+X_sample_20   
+# 20 values of X = {6 1 5 1 4 2 4 1 2 3 1 2 1 2 2 5 1 2 4 6}
+
+X_hat_20 <- sum(6, 1, 5, 1, 4, 2, 4, 1, 2, 3, 1, 2, 1, 2, 2, 5, 1, 2, 4, 6)/20
+X_hat_20 # [1] 2.75
+
+#----------------------------------------------------------------------------
+
+# P.9: Let X be a continuous random variable whose probability density function is
+# f(x) = { 2/3 - 2/9x, 0=< x =< 3
+#        { 0         , otherwise
+
+# (a) Sketch the probability density function f(x). Is the area under the curve equal to one?
+rm(list = ls())
+library(ggplot2)
+ggplot(data=data.frame( x=c(0,3),y=c(0,1) ), aes(x=x,y=y)) + 
+  geom_blank() + 
+  geom_abline(slope = -2/9 , intercept = 2/3)
+
+# (b) Geometrically calculate the probability that X falls between 0 and 1⁄2.
+
+X_half <- 2/3 - 2/9*1/2
+X_half # 5/9
+#If X = 1/2, then f(x) = 5/9
+slope <- 5/9
+x <- 1/2
+y <- 5/2
+
+area_under_x_half = x*y*slope
+area_under_x_half
+# [1] 0.6944444 <- This is the area where 1/2 =< x =< 3
+
+#Therefore, for the area where 0 =<x =< 1/2
+area_x_0_to_half <- 1-area_under_x_half
+area_x_0_to_half
+# Ans: [1] 0.3055556
+
+# (c) Geometrically calculate the probability that X falls between 1⁄4 and 3/4.
+
+# P(1/4 < X < 3/4) = P(1/4 < X < 3) - P(3/4 < X < 3)
+
+# P(1/4 < X < 3) = 1/2 * 2 3/4 * f(1/4)
+# where 2 3/4 is 3 - 1/4 = 11/4
+
+P_quarter_to_threequarter <- (1/2 * 11/4 * 11/18) - (1/2 * 9/4 * 1/2)
+P_quarter_to_threequarter
+# [1] 0.2777778
+
+#---------------------------------------------------------------------------
+
+# P.10: 
+# Suppose that X and Y are random variables with expected values Mu_X = Mu_Y = Mu 
+# and variances Sigma^2_X 1= Sigma^2_Y = Sigma^2. Let Z = (X + Y)/2.
+
+# (a) Find E(Z) = E(X+Y/2) 
+#               = 1/2[E(X)+E(Y)]
+#               = 1/2[Mu + Mu]
+#               = 1/2*2*Mu
+#               = Mu
+
+# (b) Find var(z) assuming that X and Y are statistically independent.
+# Var(z) =  var (x + y / 2)
+#        =  var(x) + var(y) /2 
+#        = (1/2)^2 * sigma^2 + sigma^2
+#        = 1/4 * 2 * sigma^2
+#        = 1/2 * sigma^2
+#        = sigma^2 / 2
+
+
+# (c) Find var(Z) assuming that cov(X, Y) = 0.5*sigma^2.
+# var(z) = var (x + y / 2)
+#        = (1/2)^2 * [var(x) + var(y) + 2* cov(x,y)]
+#        = 1/4 * (sigma^2 + sigma^2 + 2 * 0.5*sigma^2)
+#        = 3*sigma^2 / 4
+
+#---------------------------------------------------------------------------
+
+# P.11
+# The length of life (in years) of a personal computer is approximately normally 
+# distributed with mean 3.4 years and variance 1.6 years.
+# X~N(3.4, 1,6)
+
+# (a) What fraction of computers will fail in the first year?
+rm(list = ls())
+
+mean <- 3.4
+variance <- 1.6
+sd <- sqrt(1.6)
+
+prob_x_less_than_1 <- pnorm(1,mean,sd)
+prob_x_less_than_1 
+# [1] 0.02888979
+
+# manually use formula: x-mu/ squart(sigma^2)
+manual_calculation <- (1-mean)/sd
+manual_calculation
+# [1] -1.897367
+
+# check Z table for 1.8 and 0.09 and you get 0.9706
+manual_cal_after_z <- 1-0.9706
+manual_cal_after_z # [1] 0.0294
+
+# (b) What fraction of computers will last 4 years or more?
+prob_x_more_than_4 <- 1-pnorm(4,mean,sd)
+prob_x_more_than_4
+# [1] 0.3176281
+
+manual_calculation_2 <- (4-mean)/sd
+manual_calculation_2 # [1] 0.4743416
+
+# check Z table for 0.4 and 0.07 and you get 0.6808
+manual_cal_after_z_2 <- 1-0.6808
+manual_cal_after_z_2 # [1] 0.3192
+
+# (c) What fraction of computers will last at least 2 years?
+prob_x_atleast_2 <- 1-pnorm(2,mean,sd)
+prob_x_atleast_2
+# [1] 0.8658092
+
+manual_calculation_3 <- (2-mean)/sd
+manual_calculation_3 # [1] -1.106797
+
+# check Z table for 1.1 and 0.00 and you get 0.8643
+manual_cal_after_z_3 <- 0.8643
+
+# (d) What fraction of computers will last more than 2.5 years but less than 4 years?
+
+# P(2.5 < Z < 4) 
+Z_more_than_2.5 <- (2.5-mean)/sd
+Z_more_than_2.5 # -0.7115125
+Z_less_than_4 <- (4-mean)/sd
+Z_less_than_4 # 0.4743416
+
+# P(-0.7115125 < Z < 0.4743416)
+# P(Z < 0.4743) - P(Z< -0.7115125)
+Z_0.4743 <- 0.6808 # according to the Z table for 0.4 and 0.07
+Z_0.7115 <- 1-0.7611 #according to the Z table 0.7 and 0.01, and 1 minus because of (-)
+Z_2.5_to_4 <- Z_0.4743 - Z_0.7115
+Z_2.5_to_4 #0.4419
+
+# Or automatically in R 
+Z_2.5_to_4_R <- abs(pnorm(2.5,mean,sd) - pnorm(4,mean,sd)) #answer always in absolute value.
+Z_2.5_to_4_R #0.4439885 (more accurate)
+
+# (e) If the manufacturer adopts a warranty policy in which only 5% of the computers have to be replaced, what will be the length of the warranty period?
+
+Z_score_0.05 <- 1.64 
+#first, take 1-0.05=0.95, and search for 0.95 in the Z-table, you'll find it in matrix 1.6 and 0.04 (closest to 0.95)
+#you use (-) because you searched for 0.95, which is the reverse for 0.05.
+
+# thus, -1.64 = X - mean/ sd, find X.
+X <- mean-1.64*sd
+X #1.33, which is about 16 months
+
+#---------------------------------------------------------------------------
+
+# P.12
+# Based on many years of experience, an instructor in econometrics has determined that the probability distribution of X, the number of students absent on Mondays, is as follows:
+
+rm(list = ls())
+
+x <- c(0,1,2,3,4,5,6,7)
+f_x <- c(0.02,0.03,0.26,0.34,0.22,0.08,0.04,0.01)
+
+Table_12 <- matrix(ncol=2, nrow=8, data=NA)
+colnames(Table_12) <- c("x","f_x")
+Table_12[1:8] <- x
+Table_12[1:8,2] <- f_x
+Table_12
+
+# x  f_x
+# 0 0.02
+# 1 0.03
+# 2 0.26
+# 3 0.34
+# 4 0.22
+# 5 0.08
+# 6 0.04
+# 7 0.01
+
+barplot(f_x,names.arg = x, xlab="x",ylab="f(x)")
+
+# (b) Find the probability that on a given Monday either 2, or 3 or 4 students will be absent.
+# f(2) + f(3) +f(4)
+y_1 <- 0.26+0.34+0.22
+y_1 #0.82
+
+# (c) Find the probability that on a given Monday more than 3 students are absent.
+
+y_more_than_3 <- 0.22+0.08+0.04+0.01
+y_more_than_3 #0.35
+
+# (d) Compute the expected value of the random variable X. Interpret this expected value.
+
+Expected_Value_X <- sum(0*0.02,1*0.03,2*0.26,3*0.34,4*0.22,5*0.08,6*0.04,7*0.01)
+Expected_Value_X #3.16
+
+# (e) Compute the variance and standard deviation of the random variable X.
+
+Variance_X <- sum(0^2*0.02,1^2*0.03,2^2*0.26,3^2*0.34,4^2*0.22,5^2*0.08,6^2*0.04,7^2*0.01) - Expected_Value_X^2
+Variance_X # 1.5944
+
+Standard_deviation_X <- sqrt(Variance_X)
+Standard_deviation_X # 1.262696
+
+# (f) Compute the expected value and variance of Y = 7X + 3.
+
+Expected_Value_Y <- 7*Expected_Value_X + 3
+Expected_Value_Y # 25.12
+
+Variance_Y <- 7^2 * Variance_X
+Variance_Y # 78.1256
+
+# ---------------------------------------------------------------------------
+
+# P.13
+# Suppose a certain mutual fund has an annual rate of return that is approximately normally distributed with mean (expected value) 5% and standard deviation 4%. Use Table 1, the table of cumulative probabilities for the standard normal distribution, for parts (a)–(c).
+
+rm(list = ls())
+mean <- 0.05
+sd <- 0.04
+
+# X ~ N(mean,variance (sd^2))
+
+# (a) Find the probability that your 1-year return will be negative.
+
+# P(X<0) = P(Z<X-mean/sd)
+P_X_0 <- (0-mean)/sd
+P_X_0 # -1.25
+
+#Check Z-score for 1.2 and 0.05 = 0.8944
+Z_0 <- 1-0.8944
+Z_0 # 0.1056
+
+pnorm(0,mean,sd) # 0.1056498
+
+# (b) Find the probability that your 1-year return will exceed 15%.
+#P(X < 0.15)
+P_X_15 <- (0.15-mean)/sd
+P_X_15 # 2.5
+
+#Check Z-score for 2.5 and 0.00 = 0.9938
+Z_15 <- 1-0.9938
+Z_15 #0.0062
+
+1-pnorm(0.15,mean,sd) #0.006209665 (1- because its only on the extreme right tail of the normal distribution)
+
+# ---------------------------------------------------------------
+
+# P.15
+rm(list = ls())
+
+x <- c(7,2,4,-7)
+Table_15_x <- matrix(x,nrow=4)
+colnames(Table_15_x) <- c("x")
+Table_15_x
+
+#       x
+# [1,]  7
+# [2,]  2
+# [3,]  4
+# [4,] -7
+
+y <- c(5,2,3,12)
+Table_15_y <- matrix(y,nrow=4)
+colnames(Table_15_y) <- c("y")
+Table_15_y
+
+#       y
+# [1,]  5
+# [2,]  2
+# [3,]  3
+# [4,] 12
+
+# (a)
+sum_1to2_x <- 7+2
+sum_1to2_x # 9
+
+# (b)
+x_bar <- mean(x) # (7+2+4+(-7))/4
+x_bar # 1.5
+
+# (c) sum between x=1 to x=4, minus mean
+sum_1_to4_x <- sum(7-x_bar,2-x_bar,4-x_bar,-7-x_bar)
+sum_1_to4_x # 0
+
+# (d)
+sum_1_to4_x_sq <- sum((7-x_bar)^2,(2-x_bar)^2,(4-x_bar)^2,(-7-x_bar)^2) 
+sum_1_to4_x_sq #109
+
+# (e) 
+y_bar <- sum(5,2,3,12)/4
+y_bar # 5.5
+sum_1_to4_x_and_y <- sum((7-x_bar)*(5-y_bar),(2-x_bar)*(2-y_bar),(4-x_bar)*(3-y_bar),(-7-x_bar)*(12-y_bar))
+sum_1_to4_x_and_y # -66
+
+f <- (sum((7*5),(2*2),(4*3),(-7*12))-4*(x_bar*y_bar)) / (sum_1_to4_x_sq-4*x_bar^2)
+f # -0.66
+
+
+
+
