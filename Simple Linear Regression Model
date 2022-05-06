@@ -1,0 +1,1295 @@
+
+# Simple Linear Regression Model
+
+# Exercise 2.1
+
+# (a) Complete the entries in the table. Put the sums in the last row. What are the sample means x and y?
+
+rm(list = ls())
+Table_2_1 <- matrix(ncol=6,nrow=5, data=NA)
+colnames(Table_2_1) <- c("x","y","A", "B", "C","D")
+x <- c(0,1,2,3,4)
+y <- c(6,2,3,1,0)
+Table_2_1[1:5] <-x
+Table_2_1[1:5,2] <-y
+df_1 <- data.frame(rbind(Table_2_1))
+
+#Fill in the blanks
+sum_x <- sum(x) #10
+x_bar <- sum_x/5 #2
+sum_y <- sum(y) #12
+y_bar <- sum_y/5 #2.4
+
+# A: x-x_bar
+df_1$A <- df_1$x-x_bar
+Table_2_1[1,3] <- 0-x_bar
+Table_2_1[2,3] <- 1-x_bar
+Table_2_1[3,3] <- 2-x_bar
+Table_2_1[4,3] <- 3-x_bar
+Table_2_1[5,3] <- 4-x_bar
+
+# B: square x-x_bar
+df_1$B <- df_1$A^2
+Table_2_1[1,4] <- (0-x_bar)^2
+Table_2_1[2,4] <- (1-x_bar)^2
+Table_2_1[3,4] <- (2-x_bar)^2
+Table_2_1[4,4] <- (3-x_bar)^2
+Table_2_1[5,4] <- (4-x_bar)^2
+
+# C: y-y_bar
+df_1$C <- df_1$y - y_bar
+Table_2_1[1,5] <- 6-y_bar
+Table_2_1[2,5] <- 2-y_bar
+Table_2_1[3,5] <- 3-y_bar
+Table_2_1[4,5] <- 1-y_bar
+Table_2_1[5,5] <- 0-y_bar
+
+#D: (x-x_bar)(y-y_bar)
+df_1$D <- df_1$A * df_1$C
+Table_2_1[1,6] <- (0-x_bar)*(6-y_bar)
+Table_2_1[2,6] <- (1-x_bar)*(2-y_bar)
+Table_2_1[3,6] <- (2-x_bar)*(3-y_bar)
+Table_2_1[4,6] <- (3-x_bar)*(1-y_bar)
+Table_2_1[5,6] <- (4-x_bar)*(0-y_bar)
+
+df_1
+
+sum_A <- -2+-1+0+1+2
+sum_A #0
+sum_B <- 4+1+0+1+4
+sum_B #10
+sum_C <- 0
+sum_D <--13
+
+# Use Least Squares Estimators to solve for beta_1 and beta_2
+# beta_2 = sum(x-x_bar)(y-y_bar)/sum(x-x_bar)^2
+
+beta_2_numerator <- sum((0-x_bar)*(6-y_bar),(1-x_bar)*(2-y_bar),(2-x_bar)*(3-y_bar), (3-x_bar)*(1-y_bar),(4-x_bar)*(0-y_bar))
+beta_2_numerator #-13
+
+beta_2_denominator <- sum((0-x_bar)^2,(1-x_bar)^2,(2-x_bar)^2,(3-x_bar)^2,(4-x_bar)^2)
+beta_2_denominator #10
+
+beta_2 <- beta_2_numerator/beta_2_denominator
+beta_2 # -1.3
+
+# beta_1 = y_bar - b_2 * x_bar
+beta_1 <- y_bar - (beta_2*x_bar)
+beta_1 # 5
+
+# (d) Use the least squares estimates from part (b) to compute the fitted values of y,and
+# complete the remainder of the table below. Put the sums in the last row.
+
+Table_2_2 <- matrix(ncol=6,nrow=5, data=NA)
+colnames(Table_2_2) <- c("x","y","A", "B", "C","D")
+Table_2_2[1:5] <-x
+df_2 <- data.frame(rbind(Table_2_2))
+ 
+Table_2_2[1:5,2] <-y
+
+sum(df_2$y) #12
+sum(df_2$x) # 10
+
+# y_hat = beta_1 + beta_2 * x
+df_2$A <- beta_1 + beta_2 * df_2$x
+sum(df_2$A) # 12
+
+# epsilon_hat (standard_error) = y - beta_1 - beta_2 * x
+df_2$B <- df_2$y - beta_1 - beta_2 * df_2$x
+sum(df_2$B) # 0
+
+# epsilon_hat square
+df_2$C <- df_2$B^2
+sum(df_2$C) # 4.3
+
+# x * epsilon_hat
+df_2$D <- df_2$x * df_2$B 
+sum(df_2$D) # 0
+
+df_2
+
+# x y    A    B    C    D
+# 1 0 6  5.0  1.0 1.00  0.0
+# 2 1 2  3.7 -1.7 2.89 -1.7
+# 3 2 3  2.4  0.6 0.36  1.2
+# 4 3 1  1.1 -0.1 0.01 -0.3
+# 5 4 0 -0.2  0.2 0.04  0.8
+
+# (e) On graph paper, plot the data points and sketch the fitted regression line y_hat = beta_1 +beta_2 * x
+
+library(ggplot2)
+ggplot(df_2, aes(x=x,y=y))+
+  geom_point(color="blue") +
+  geom_abline(slope=beta_2, intercept=beta_1, color="Red") 
+ggsave("P 2.1 _ geomplot.pdf")
+
+
+# (i) Compute sigma_hat square (variance beta_1)
+# sigma_hat_square = sum(standard error^2)/ (No. of observations - x_bar)^2
+
+Var_beta_1 <- sum(df_2$B^2)/(5-x_bar)
+Var_beta_1 #1.4333
+
+# (j) Compute Var_hat beta_2
+# Var_beta_2 = Var(beta_1) / sum (x-x_bar)^2
+
+Var_beta_2 <- Var_beta_1 / sum_B
+Var_beta_2 #0.1433333
+
+# --------------------------------------------------------------------------
+
+# Exercise 2.2
+# A household has weekly income of $2,000. The mean weekly expenditure for households with this income is E[y|x = $2,000] = mu_y|x=2,000 = $200, and expenditures exhibit variance var(x|x = $2,000) = sigma_square_y|x=$2,000 = 100.
+
+rm(list = ls())
+weekly_income <- 2000
+expenditure_mean <- 200
+expenditure_variance <- 100
+expenditure_sd <- sqrt(expenditure_variance)
+
+# (a) Assuming that weekly food expenditures are normally distributed, find the
+# probability that a household with this income spends between $180 and $215 on
+# food in a week. Include a sketch with your solution.
+
+# Food Expenditure ~ N (mean, variance)
+
+Food_exp_morethan180 <- (180-expenditure_mean)/expenditure_sd
+Food_exp_morethan180 # -2
+Z_value_Food_exp_morethan180 <- 1-0.9772 
+Z_value_Food_exp_morethan180 # 0.0228
+
+Food_exp_lessthan215 <- (215-expenditure_mean)/expenditure_sd
+Food_exp_lessthan215 # 1.5 
+Z_value_Food_exp_lessthan215 <- 1-0.9332
+Z_value_Food_exp_lessthan215 #0.0668
+
+answer <- 1-(Z_value_Food_exp_morethan180+Z_value_Food_exp_lessthan215)
+answer #0.9104
+
+# Drawing normal distribution
+lower_bound <- 180
+upper_bound <- 215
+
+x <- seq(-4,4,length=100)*expenditure_sd+expenditure_mean
+hx <- dnorm(x,expenditure_mean,expenditure_sd)
+plot(x,hx, type='l', xlab="Food Expenditure", ylab="",
+     main="Normal Distribution")
+
+i <- x >= lower_bound & x <= upper_bound
+lines(x,hx)
+polygon(c(lower_bound,x[i],upper_bound), c(0,hx[i],0), col="red")
+
+area <- pnorm(upper_bound,expenditure_mean,expenditure_sd) - pnorm(lower_bound,expenditure_mean,expenditure_sd)
+result <- paste("P(",lower_bound,"< Food Expenditure <",upper_bound,") =",
+                signif(area,digits=3))
+mtext(result,3)
+
+# (b) Find the probability that a household with this income spends more than $250 on
+# food in a week. Include a sketch with your solution.
+
+Food_exp_morethan190 <- (190-expenditure_mean)/expenditure_sd
+Food_exp_morethan190 # -1
+# Z-value is 0.8413
+
+1-pnorm(190,expenditure_mean,expenditure_sd)
+# 0.8413447
+
+#---------------------------------------------------------------------------
+
+rm(list = ls())
+
+# Exercise 2.3 
+
+x <- c(1,2,3,4,5,6)
+y <- c(10,8,5,5,2,3)
+Table_2_3 <- data.frame(x,y)
+
+plot(x,y,pch=16, col ="blue") 
+abline(lm(y~x), col="red")
+
+#Preliminary Calculations
+sum_x <- sum(x)
+sum_x #21
+
+sum_y <- sum(y)
+sum_y # 33
+
+x_bar <- sum_x/6
+x_bar  # 3.5
+
+y_bar <- sum_y/6
+y_bar # 5.5
+
+Table_2_3$x_minus_x_bar <- Table_2_3$x-x_bar
+Table_2_3$y_minus_y_bar <- Table_2_3$y-y_bar
+Table_2_3$product <- Table_2_3$x_minus_x_bar*Table_2_3$y_minus_y_bar 
+Table_2_3$x_minus_x_bar_sq <- Table_2_3$x_minus_x_bar^2
+
+Table_2_3
+
+# x  y x_minus_x_bar y_minus_y_bar product x_minus_x_bar_sq
+# 1 10          -2.5           4.5  -11.25             6.25
+# 2  8          -1.5           2.5   -3.75             2.25
+# 3  5          -0.5          -0.5    0.25             0.25
+# 4  5           0.5          -0.5   -0.25             0.25
+# 5  2           1.5          -3.5   -5.25             2.25
+# 6  3           2.5          -2.5   -6.25             6.25
+
+beta_2_numerator <- sum(Table_2_3$product)
+# -26.5
+beta_2_denomenator <- sum(Table_2_3$x_minus_x_bar_sq)
+# 17.5
+
+beta_2 <- sum(Table_2_3$product)/sum(Table_2_3$x_minus_x_bar_sq)
+beta_2
+# -1.514286
+
+beta_1 <- y_bar-beta_2*x_bar
+beta_1
+# 10.8
+
+# (c) Obtain the sample means of y_bar = sum(y_i/N) and x_bar=sum(x_i/N). Obtain the predicted value of y for x = x_bar and plot it on your graph. What do you observe about this predicted value?
+
+sample_mean_y_bar <- sum(y)/6 # 6 is No. of observations
+sample_mean_y_bar # 5.5
+
+sample_mean_x_bar <- sum(x)/6 # 6 is No. of observations
+sample_mean_x_bar # 3.5
+
+#predicted value for y at x = x_bar is
+y_hat <- beta_1 + beta_2*sample_mean_x_bar
+y_hat # 5.5
+
+# We observe that y_bat = beta_1 + beta_2*x_bar = y_bar. That is, the predicted value at the sample mean x is the
+# sample mean of the dependent variable y . This implies that the least-squares estimated line passes through the point (x_bar,y_bar).
+
+# (d)Calculate sum of x*standard_error (epsilon_hat)
+
+Table_2_3$standard_error <- Table_2_3$y-beta_1-beta_2*Table_2_3$x
+Table_2_3
+# x  y x_minus_x_bar y_minus_y_bar product x_minus_x_bar_sq standard_error
+# 1 10          -2.5           4.5  -11.25             6.25      0.7142857
+# 2  8          -1.5           2.5   -3.75             2.25      0.2285714
+# 3  5          -0.5          -0.5    0.25             0.25     -1.2571429
+# 4  5           0.5          -0.5   -0.25             0.25      0.2571429
+# 5  2           1.5          -3.5   -5.25             2.25     -1.2285714
+# 6  3           2.5          -2.5   -6.25             6.25      1.2857143
+
+Table_2_3$x_times_standard_error <- Table_2_3$x * Table_2_3$standard_error
+Table_2_3
+#  x_times_standard_error
+#              0.7142857
+#              0.4571429
+#             -3.7714286
+#              1.0285714
+#             -6.1428571
+#              7.7142857
+
+sum_epsilon_hat_times_x <- sum(Table_2_3$x_times_standard_error)
+sum_epsilon_hat_times_x # [1] -1.953993e-14
+
+# ----------------------------------------------------------------------
+
+# Exercise 2.4
+
+# We have defined the simple linear regression model to be y = b1 + b2x + e. 
+# Suppose however that we knew, for a fact, that b1 = 0.
+
+# (a) What does the linear regression model look like, algebraically, if b1 = 0?
+# Answer: If b1 = 0, the simple linear regression model becomes yi = b2xi +ei
+
+# (b) What does the linear regression model look like, graphically, if b1 = 0?
+# Answer: Graphically, setting b1 =0 implies the mean of the simple linear 
+# regression model E(yi)= b2xi passes through the origin (0,0).
+
+# (c) If b1 = 0 the least squares ‘‘sum of squares’’ function becomes 
+# S(b2) = sum of i = 1 to N (yi-b2xi)^2. Using the data, plot the value of the sum of squares function for enough values of b2 for you to locate the approximate minimum.
+
+rm(list = ls())
+
+x <- c(1,2,3,4,5,6)
+y <- c(4,6,7,7,9,11)
+Table_2_4 <- data.frame(x,y)
+
+# S(b2) = Sum{1 to N} (yi-b2xi)^2  
+# Expand (yi-b2xi)^2  --> sum [(yi-bxi)(yi-bxi)] 
+#                       = sum(y^2) - 2b*sum(xi*yi) + b^2*sum(xi^2)
+#             Thus, b   = sum(x*y)/sum(x^2)
+
+Table_2_4$product <- Table_2_4$x*Table_2_4$y
+b <- sum(Table_2_4$product)/sum(Table_2_4$x^2)
+b # 1.934066
+
+plot(x,y,pch=16, col ="blue", xlim =c(0,6),ylim = c(0, 12)) 
+abline(a=0, b=1.93, col="purple") # not fitted regression line, just based on b value, from intercept 0.
+abline(lm(y~x), col="green") # fitted
+
+x_bar = sum(x)/6
+x_bar
+y_bar = sum(y)/6
+y_bar
+
+points(x_bar,y_bar,pch=16, col="red") # realize it falls in the fitted regression line and not the other
+
+# (f) Using the estimates obtained with the formula in (d), obtain the least squares
+# residuals, ^ei = yi - b2xi. Find their sum.
+
+Table_2_4$residual <- Table_2_4$y-(b*Table_2_4$x)
+Table_2_4
+
+# x  y product    residual
+# 1  4       4  2.0659341
+# 2  6      12  2.1318681
+# 3  7      21  1.1978022
+# 4  7      28 -0.7362637
+# 5  9      45 -0.6703297
+# 6 11      66 -0.6043956
+
+Epsilon_hat <- sum(Table_2_4$residual)
+Epsilon_hat # 3.384615
+
+Table_2_4$residual_x <- Table_2_4$residual*Table_2_4$x
+Table_2_4
+# x  y product    residual residual_x
+# 1  4       4  2.0659341  2.065934
+# 2  6      12  2.1318681  4.263736
+# 3  7      21  1.1978022  3.593407
+# 4  7      28 -0.7362637 -2.945055
+# 5  9      45 -0.6703297 -3.351648
+# 6 11      66 -0.6043956 -3.626374
+
+sum_residual_x <- sum(Table_2_4$residual_x)
+sum_residual_x # 0 
+
+# --------------------------------------------------------------------
+
+# Exercise 2.5
+
+# A small business hires a consultant to predict the value of weekly sales of their product if their weekly advertising is increased to $750 per week. 
+# The consultant takes a record of how much the firm spent on advertising per week and the corresponding weekly sales over the past six months. 
+# The consultant writes ‘‘Over the past six months the average weekly expenditure on advertising has been $500 and average weekly sales have been $10,000. 
+# Based on the results of a simple linear regression, I predict sales will be $12,000 if $750 per week is spent on advertising.’
+
+rm(list=ls())
+
+# Consultant : b1 + b2*500 = 10,000
+# Regression : b1 + b2*750 = 12,000
+
+# Take the difference to get b1 + b2*250 = 2,000
+b2 <- 2000/250 #8
+
+b1_consultant <- 10000-b2*500 # = 6000
+b2_regression <- 12000-b2*750 # = 6000
+
+# Therefore, the regression line is y = 8x + 6000, where y = sales and x = expenditure of Adverts
+
+# Now draw the regression line
+plot(1, type = "n", xlab = "Advert ($)",
+     ylab = "Sales ($)", main="Sales = 8*Adverts + 6000", xlim = c(0,1000), 
+     ylim = c(6000, 15000))
+
+abline(a=6000, b=8, col="red")
+grid(nx = 5, ny = 5, col = "lightgray", lty = "dotted")
+
+#----------------------------------------------------------------------------
+
+# Exercise 2.6
+
+# A soda vendor at Louisiana State University football games observes that more 
+# sodas are sold the warmer the temperature at game time is. Based on 32 home 
+# games covering five years, the vendor estimates the relationship between soda 
+# sales and temperature to be ^y = -240 + 8x, where y = the number of sodas 
+# she sells and x = temperature in degrees Fahrenheit,
+
+# (b) On a day when the temperature at game time is forecast to be 80 Degrees F.,
+# predict how many sodas the vendor will sell.
+
+# If ^y = -240 + 8x, then,
+y_80 <- -240 + 8*80
+y_80 #400
+
+# (c) Below what temperature are the predicted sales zero?
+
+# 0 = -240 + 8*x
+# x = 240/8
+
+x <- 240/8
+x # 30. no sodas will be sold below 30 degrees Farenheit.
+
+plot(1, type = "n", xlab ="Degrees in Farenheit",
+     ylab ="Sodas Sold", main="Sodas Sold = 8*Degrees F. -240", xlim = c(0,100), 
+     ylim = c(-200, 600))
+abline(a=-240,b=8, col="blue")
+points(30,0, col="red")
+grid(nx = 4, ny = 4, col = "lightgrey", lty = "dotted")
+abline(h=0,v=30,col = "red", lty = "dotted")
+
+#-----------------------------------------------------------------------------
+
+# Exercise 2.7
+
+# You have the results of a simple linear regression based on state-level data and the District of Columbia, a total of N = 51 observations.
+
+# (a) The estimated error variances sigma^2 = 2.04672. What is the sum of the squared least squares residuals?
+# Var = sum(residuals)/ Number of observations - 2
+
+rm(list=ls())
+
+sigma_squared <- 2.04672
+No_observations <- 51
+
+squared_least_squares_residuals <- sigma_squared*(No_observations-2)
+squared_least_squares_residuals
+# 100.2893
+
+# (b) The estimated variance of b2 is 0.00098. What is the standard error of b2? What
+# is the value of sum(xi - x_bar)^2
+
+b2_variance <- 0.00098
+
+# SE(b2) = sqrt(Var(b2))
+SE_b2 <- sqrt(b2_variance)
+SE_b2 # 0.03130495
+
+# Var(b2) = sigma_squared / sum(x-x_bar)^2
+sum_x_x_bar_squared <- sigma_squared/b2_variance
+sum_x_x_bar_squared # 2088.49
+
+# (c) Suppose the dependent variable yi = the state’s mean income (in thousands of
+# dollars) of males who are 18 years of age or older and xi = the percentage of males 18 years or older who are high school graduates. 
+# If b2 = 0.18, interpret this result.
+
+# y = state’s mean income (in thousands of dollars) of males who are 18 years of age or older
+# x = the percentage of males 18 years or older who are high school graduates.
+b2 <- 0.18 
+
+# Ans : It means that for every 1% increase in percentage of males who are high school graduate will lead to increase $180 in the mean income of males who are 18 years or older.
+
+# (d) what is the estimate of the intercept parameter for:
+x_bar <- 69.139
+y_bar <- 15.187
+
+# Linear regression formula: y = b_1 + b_2*x. The intercept is b_1.
+
+b1 <- y_bar-(b2*x_bar)
+b1 # 2.74198
+
+# Therefore, sum(x)^2 is:
+# 1. since sum(x-x_bar)^2 = Sum(x)^2 - N*x_bar^2
+
+sum_x_squared <- sum_x_x_bar_squared + (No_observations*x_bar^2)
+sum_x_squared # 245,879
+
+# (f) For the state of Arkansas the value of yi = 12.274 and the value of xi = 58.3.
+# Compute the least squares residual for Arkansas. (Hint: Use the information in parts (c) and (d).).
+
+x <- 58.3
+y <- 12.274
+
+# Linear regression formula: y = b_1 + b_2*x+e, where e is the residual
+Least_Squared_Residual <- y-(b2*x)-b1
+Least_Squared_Residual # -0.96198
+
+#------------------------------------------------------------------------------
+
+rm(list=ls())
+library(devtools)
+install_git("https://github.com/ccolonescu/PoEdata")
+library(PoEdata)
+
+#Computer Exercises
+
+# Exercise 2.9
+
+# The owners of a motel discovered that a defective product was used in its construc- tion. It took seven months to correct the defects, during which 14 rooms in the
+# 100-unit motel were taken out of service for 1 month at a time. The motel lost profits due to these closures, and the question of how to compute the losses was addressed by Adams (2008).
+# For this exercise use the data in motel.dat.
+
+data(motel)
+summary(motel)
+library(ggplot2)
+
+ggplot(motel, aes(time))+
+  geom_line(aes(y=motel_pct, color="motel_pct")) +
+  geom_line(aes(y=comp_pct, color="comp_pct")) +
+  geom_vline(xintercept = 17,color = "blue", size=0.5) +
+  geom_vline(xintercept = 23,color = "blue", size=0.5) +
+  xlab("Time") +
+  ylab("Occupancy Rate")
+ggsave("Motel Occupancy Rate.pdf")
+
+# The repair period comprises those months between the two vertical lines. The graphical evidence suggests that the damaged motel had the higher occupancy rate before and after the repair period. During the repair period, the damaged motel and the competitors had similar occupancy rates.
+
+plot(motel$motel_pct,motel$comp_pct, pch = 16, col="blue", xlab ="Percentage of Occupancy for Motel",
+     ylab ="Percentage of Occupancy for Competitor", main="Occupancy Rate")
+grid(nx = 4, ny = 4, col = "lightgrey", lty = "dotted")
+
+# There appears to be a positive relationship the two variables. Such a relationship may exist as both the damaged motel and the competitor(s) face the same demand for motel rooms. That is, competitor occupancy rates reflect overall demand in the market for motel rooms.
+
+# (c) Estimate a linear regression with y = MOTEL_PCT and x = COMP_PCT. Discuss the result.
+Linear_Regression <- lm(motel_pct~comp_pct, data=motel)
+summary(Linear_Regression)
+
+#Call:
+#  lm(formula = motel_pct ~ comp_pct, data = motel)
+
+#Residuals:
+#  Min      1Q  Median      3Q     Max 
+#-23.876  -4.909  -1.193   5.312  26.818 
+
+#Coefficients:
+#             Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)  21.4000    12.9069   1.658 0.110889    
+#comp_pct      0.8646     0.2027   4.265 0.000291 ***
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 11.02 on 23 degrees of freedom
+#Multiple R-squared:  0.4417,	Adjusted R-squared:  0.4174 
+#F-statistic: 18.19 on 1 and 23 DF,  p-value: 0.0002906
+
+# The competitors’ occupancy rates are positively related to motel occupancy rates, as expected. The regression indicates that for a one percentage point increase in competitor occupancy rate, the damaged motel’s occupancy rate is expected to increase by 0.8646 percentage points.
+# Thus, the estimated regression is motel_pct = 21.40 + 0.8646*comp_pct
+
+# (d) Compute the least squares residuals from the regression results in (c) . Plot these residuals against time. Does the model overpredict, underpredict, or accurately predict the motel’s occupancy rate during the repair period?
+
+motel$residual <- motel$motel_pct-21.40-(0.8646*motel$comp_pct)
+
+ggplot(motel, aes(x=time, y=residual))+
+  geom_point() +
+  geom_vline(xintercept = 17,color = "blue", size=0.5) +
+  geom_vline(xintercept = 23,color = "blue", size=0.5) +
+  geom_hline(yintercept = 0, color= "red", size=0.5)
+ggsave("Residuals against time.png")
+
+# The residuals during the occupancy period are those between the two vertical 
+# lines. All except one are negative, indicating that the model has over-predicted the 
+# motel’s occupancy rate during the repair period.
+
+# (e) Consider a linear regression with y = MOTEL_PCT and x = RELPRICE, which is the ratio of the price per room charged by the motel in question relative to its competitors. What sign do you predict for the slope coefficient? Why? Does the sign of the estimated slope agree with your expectation?
+
+Linear_Regression_2 <- lm(motel_pct~relprice, data=motel)
+summary(Linear_Regression_2)
+
+# Call:
+# lm(formula = motel_pct ~ relprice, data = motel)
+
+# Residuals:
+#Min      1Q  Median      3Q     Max 
+#-33.779  -6.181   4.003   8.842  21.760 
+
+#Coefficients:
+#               Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)   166.66      43.57   3.825 0.000868 ***
+# relprice     -122.12      58.35  -2.093 0.047589 *  
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 13.52 on 23 degrees of freedom
+#Multiple R-squared:   0.16,	Adjusted R-squared:  0.1234 
+#F-statistic:  4.38 on 1 and 23 DF,  p-value: 0.04759
+
+# motel_pct = 166.66 - 122.12*relprice
+
+# (f) Consider the linear regression with y = MOTEL_PCT, and x = REPAIR,which is an indicator variable, taking the value 1 during the repair period and 0 otherwise. Discuss the interpretation of the least squares estimates. Does the motel appear to have suffered a loss of occupancy, and therefore profits, during the repair period?
+Linear_Regression_3 <- lm(motel_pct~repair, data=motel)
+summary(Linear_Regression_3)
+
+#Call:
+#  lm(formula = motel_pct ~ repair, data = motel)
+
+#Residuals:
+#  Min     1Q Median     3Q    Max 
+#-26.91 -10.55  -0.55  10.99  16.85 
+
+#Coefficients:
+#               Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)   79.350      3.154  25.158   <2e-16 ***
+#  repair       -13.236      5.961  -2.221   0.0365 *  
+#  ---
+#  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Residual standard error: 13.38 on 23 degrees of freedom
+#Multiple R-squared:  0.1765,	Adjusted R-squared:  0.1407 
+#F-statistic: 4.931 on 1 and 23 DF,  p-value: 0.03651
+
+# motel_pct = 79.3500 - 13.2357*repair
+# when repair = 0 (not during repair period), the hotel occupancy is 79.35%.
+# During the repair period (repair = 1), hotel occupancy is 79.350 - 13.2357 = 66.11%.
+# A loss of 13.24% during repair period.
+
+# (g) Compute the average occupancy rate for the motel and competitors when the repairs were not being made (call these MOTEL0 and COMP0), and when they were being made (MOTEL1 and COMP1). During the nonrepair period, what wasthedifferencebetweentheaverageoccupancies,MOTEL0 􏰃COMP0?Does this comparison seem to support the motel’s claims of lost profits during the repair period?
+
+Motel_0 = 79.35
+Motel_1 = 66.11
+
+Linear_Regression_4 <- lm(comp_pct~repair, data=motel)
+Linear_Regression_4
+
+#Coefficients:
+#  (Intercept)       repair  
+#    62.4889       0.8825  
+
+# comp_pct = 62.49 + 0.8825*repair
+
+Competitor_0 = 62.49
+Competitor_1 = 62.49 + 0.8825 #63.37%
+
+non_repair_period <- Motel_0 - Competitor_0
+non_repair_period #16.86%
+
+repair_period <- Motel_1 - Competitor_1
+repair_period #2.74%
+
+# This comparison supports the motel’s claim for lost profits during the repair period. When there were no repairs, their occupancy rate was 16.86% higher than that of their competitors; during the repairs it was only 2.74% higher.
+
+# (h) Estimate a linear regression model with y = MOTEL_PCT – COMP_PCT and x = REPAIR. How do the results of this regression relate to the result in part (g)?
+
+Linear_Regression_5 <- lm(motel_pct-comp_pct~repair, data=motel)
+Linear_Regression_5
+
+# Coefficients:
+#  (Intercept)       repair  
+#       16.86       -14.12 
+
+# motel_pct-comp_pct = 16.86 - 14.12*repair
+# It derives to the same result as (g).
+# This relationship exists because averaging the difference between two series is the same as taking the difference between the averages of the two series.
+
+#---------------------------------------------------------------------
+
+rm(list=ls())
+data(br2)
+
+# Excercise 11
+# The file br2.dat contains data on 1080 houses sold in Baton Rouge, Louisiana, during mid-2005. The data include sale price, the house size in square feet, its age, whether it has a pool or fireplace or is on the waterfront. Also included is an indicator variable TRADITIONAL indicating whether the house style is traditional or not.8Variable descriptions are in the file br2.def.
+
+
+# (a) Plot house price against house size for houses with traditional style.
+library(dplyr)
+library(ggplot2)
+
+traditional <- filter(br2, traditional==1)
+ggplot(traditional, aes(x=sqft, y=price))+
+  geom_point(color="darkblue") +
+  xlab("total square feet")+
+  ylab("price")
+ggsave("exercise 11_a.png")
+
+# (b) For the traditional-style houses estimate the linear regression model PRICE = b1 + b2SQFT + e. 
+# Interpret the estimates. Draw a sketch of the fitted line.
+
+model_1 <- lm(price~sqft,traditional)
+model_1
+
+# Coefficients:
+# (Intercept)         sqft  
+#  -28407.56        73.77  
+
+# ---> Price = -28407.56 + 73.77*sqft
+
+traditional <- filter(br2, traditional==1)
+ggplot(traditional, aes(x=sqft, y=price))+
+  geom_point(color="darkblue") +
+  geom_abline(slope=73.77,intercept= -28407.56, color="red") +
+  xlab("total square feet")+
+  ylab("price")
+ggsave("exercise 11_b.png")
+
+# (c) For the traditional-style houses estimate the quadratic regression model PRICE = a1 +  a2*SQFT^2 + e. Compute the marginal effect of an additional square foot of living area in a home with 2000 square feet of living space. Compute the elasticity of PRICE with respect to SQFT for a home with 2000 square feet of living space. Graph the fitted line. On the graph, sketch the line that is tangent to the curve for a 2000-square-foot house.
+
+model_2 <- lm(price~I(sqft^2), data=traditional) # I in R is a function for independent variable
+b1 <- coef(model_2)[[1]]
+b1 # 68710.05
+
+b2<- coef(model_2)[[2]]
+b2 # 0.01206323
+
+# Thus, Price = 68710.05 + 0.01206323 * sqft^2
+
+# For marginal effect on price for every additional sqft for 2000sqft living space, 
+# we take the slope = dPRICE/ dSQFT. 
+sqftx <- 2000
+
+# Price = 68710.05 + 0.01206323 * sqft^2
+# Thus, marginal effect on price = 2*slope (which is b2)*sqft
+marginal_effect <- 2*b2*sqftx # Dprice/Dsqft
+marginal_effect #48.25293
+# That is, an additional square foot of living space for a traditional home of 2000 square feet is expected to increase its price by $48.25.
+
+#For elasticity, we first need to compute an estimate of the expected price when SQFT = 2000
+pricex <- b1+b2*sqftx^2
+pricex #116963 is the price corresponding to given sqft
+
+# Elasticity = Dprice/Dsqft * sqft(x)/ price(y)
+elasticity <- marginal_effect*sqftx/pricex
+elasticity # 0.8250975
+# That is, for a 2000 square foot house, we estimate that a 1% increase in house size will increase price by 0.825%.
+
+#  Graph the fitted line. On the graph, sketch the line that is tangent to the curve for a 2000-square-foot house.
+
+traditional <- filter(br2, traditional==1)
+ggplot(traditional, aes(x=sqft, y=price))+
+  geom_point(color="darkblue") +
+  geom_abline(slope=73.77,intercept= -28407.56, color="red") +
+  geom_smooth(method="lm", formula=y~poly(x,2), color="darkgreen", size=0.7, se=FALSE)+
+  xlab("total square feet")+
+  ylab("price")
+ggsave("exercise 11_c.png")
+
+# (d) For the regressions in (b) and (c) compute the least squares residuals and plot
+# them against SQFT. Do any of our assumptions appear violated?
+
+traditional$residual <- traditional$price-b1-(b2*traditional$sqft)
+
+ggplot(traditional, aes(x=sqft,y=residual))+
+  geom_point(color="darkblue") +
+  xlab("total square feet")+
+  ylab("residual")+
+  labs(title="Residuals from linear relation")
+ggsave("exercise 11_d.png")
+
+ggplot(traditional, aes(x=sqft^2,y=residual))+
+  geom_point(color="darkblue")+
+  xlab("total square feet")+
+  ylab("residual")+
+  labs(title="Residuals from quadratic relation")
+ggsave("exercise 11_d2.png")
+
+# The magnitude of the residuals tends to increase as housing size increases suggesting that
+# SR3 var(e|x) = sigma^2 [homoskedasticity] could be violated. The larger residuals for larger
+# houses imply the spread or variance of the errors is larger as SQFT increases. 
+# Or, in other words, there is not a constant variance of the error term for all house sizes.
+
+
+# (e) One basis for choosing between these two specifications is how well the data are fit by the model. Compare the sum of squared residuals (SSE) from the models in (b) and (c). Which model has a lower SSE? How does having a lower SSE indicate
+# a ‘‘better-fitting’’ model?
+
+# Linear: Price = -28407.56 + 73.77*sqft
+# Quadratic: Price = 68710.05 + 0.01206323 * sqft^2
+
+Linear_SSE <- sum(residuals(model_1)^2)
+Linear_SSE
+# 1.374625e+12 --> 1.37 x 10^12
+
+Quadratic_SSE <-sum(residuals(model_2)^2)
+Quadratic_SSE
+# 1.232222e+12 -- > 1.23 x 10^12
+
+# The quadratic model has a lower SSE. A lower SSE, or sum of squared residuals, indicates a lower value for the squared distance between a regression line and data points, indicating a line that better fits the data.
+
+# (f) For the traditional-style houses estimate the log-linear regression model
+# in(PRICE) = gamma_1 + gamma_2*SQFT + e. Interpret the estimates. Graph the fitted line, and sketch the tangent line to the curve for a house with 2000 square feet of living area.
+
+model_3 <- lm(log(price)~sqft, data=traditional)
+model_3
+
+# Call:
+# lm(formula = log(price) ~ sqft, data = traditional)
+
+# Coefficients:
+#  (Intercept)         sqft  
+#    1.080e+01    4.132e-04 
+
+# Model 3 --> In (price) = 10.79894 + 0.000413235*SQFT
+
+# To fit the line in the graph
+ggplot(traditional, aes(x=sqft, y=price))+
+  geom_point(color="darkblue") +
+  geom_abline(slope=73.77,intercept= -28407.56, color="red") +
+  geom_smooth(method="lm", formula=y~poly(x,2), color="darkgreen", size=0.7, se=FALSE)+
+  geom_smooth(method="glm", formula=y~x, method.args=list(family=gaussian(link='log')), color="black", size=0.7, se=FALSE)+
+  xlab("total square feet")+
+  ylab("price")+
+  labs(title="Observations and log-linear fitted line")
+ggsave("exercise_11_f.png")
+
+# (g) How would you compute the sum of squared residuals for the model in (f ) to make it comparable to those from the models in (b) and (c)? Compare this sum of squared residuals to the SSE from the linear and quadratic specifications. Which model seems to fit the data best?
+
+log_linear_SSE <- sum(residuals(model_3))
+log_linear_SSE # -3.846316e-15 (even smaller than the other 2 models)
+# Since the log scale is compressed, the SSE from this specification is not comparable to the SSE from the models with PRICE as the dependent variable. 
+
+# ---------------------------------------------------------------------------------------
+
+# Exercise 2.12
+
+rm(list=ls())
+
+# The file stockton4.dat contains data on 15009 houses sold in Stockton, CA during 1996–1998. Variable descriptions are in the file stockton4.def.
+library(PoEdata)
+data(stockton4)
+summary(stockton4)
+library(ggplot2)
+
+# (a) Plot house selling price against house living area for all houses in the sample.
+
+ggplot(stockton4, aes(x=livarea,y=sprice))+
+  geom_point(color="darkblue")+
+  xlab("Living Area")+
+  ylab("Selling Price")
+
+# The scatter plot in the figure below shows a positive relationship between selling price and house size.
+
+# (b) Estimate the regression model SPRICE = b1 + b2*LIVAREA + e for all the
+# houses in the sample. Interpret the estimates. Draw a sketch of the fitted line.
+
+model_1 <- lm(sprice~livarea, data=stockton4)
+model_1
+
+# Coefficients:
+# (Intercept)      livarea  
+#    -30069         9182  
+
+# model 1 --> Selling price = -30069 + 9182*livarea
+
+ggplot(stockton4, aes(x=livarea,y=sprice))+
+  geom_point(color="darkblue")+
+  geom_abline(slope=9182, intercept=-30069, color="red")+ # <--- this is the regression line
+  xlab("Living Area")+
+  ylab("Selling Price")
+
+# The coefficient 9181.7 suggests that selling price increases by approximately $9182 for each additional 100 square foot in living area. The intercept, if taken literally, suggests a house with zero square feet would cost 􏰘 $30,069, a meaningless value. The model should not be accepted as a serious one in the region of zero square feet.
+
+# (c) Estimate the quadratic model SPRICE = a1 + a2*LIVAREA^2 + e for all the houses in the sample. What is the marginal effect of an additional 100 square feet of living area for a home with 1500 square feet of living area?
+
+model_2 <- lm(sprice~I(livarea^2),data=stockton4)
+model_2
+
+# Coefficients:
+#  (Intercept)  I(livarea^2)  
+#    57728.3         212.6
+
+# model 2 ---> Selling price = 57728.3 + 212.6 * livarea^2
+b1_quadratic <- 57728.3
+b2_quadratic <- 212.6
+
+# the marginal effect formula is 2*(b2_quadratic*x)
+
+# the marginal effect of an additional 100 square feet for a home with 1500 square feet of living area is:
+x<- 15 # 1500 square feet
+dSPRICE_over_dLIVAREA <- 2*b2_quadratic*x
+dSPRICE_over_dLIVAREA # 6378
+
+# (d) In the same graph, plot the fitted lines from the linear and quadratic models. Which seems to fit the data better? Compare the sum of squared residuals (SSE) for the two models. Which is smaller?
+
+ggplot(stockton4, aes(x=livarea,y=sprice))+
+  geom_point(color="darkblue")+
+  geom_abline(slope=9182, intercept=-30069, color="red")+ # <--- this is the regression line
+  geom_smooth(model="lm", formula=y~poly(x,2), color="darkgreen", size=0.7, se=FALSE)+
+  xlab("Living Area")+
+  ylab("Selling Price")
+
+SSE_linear <- sum(residuals(model_1)^2)
+SSE_linear # 2.226968e+12 --> 2.23 * 10^ 12
+
+SSE_quadratic <- sum(residuals(model_2)^2)
+SSE_quadratic # 2.031478e+12 <-- 2.03 * 10^12
+
+# The SSE of the quadratic model is smaller, indicating that it is a better fit.
+
+#(e) Estimate the regression model in (c) using only houses that are on large lots.
+# Repeat the estimation for houses that are not on large lots. Interpret the estimates.
+# How do the estimates compare?
+
+library(dplyr)
+
+large_lot <- filter(stockton4, lgelot==1)
+not_large_lot <- filter(stockton4, lgelot==0)
+
+model_3 <- lm(sprice~I(livarea^2),data=large_lot)
+model_3
+
+#Coefficients:
+#  (Intercept)  I(livarea^2)  
+#    113279.4         193.8
+
+# model 3 --> Selling Price = 113279.4 + 193.8*livarea^2
+
+model_4 <- lm(sprice~I(livarea^2),data=not_large_lot)
+model_4
+
+# Coefficients:
+#   (Intercept)  I(livarea^2)  
+#      62172.4         186.9
+
+# model 4 ---> Selling Price = 62172.4 + 186.9*livarea^2 
+
+# the marginal effect formula is 2*b2*x_i, thus,
+marginal_effect_model_3 <- 2* 193.8 
+marginal_effect_model_3 # $387.6*livarea for houses with large lots
+
+marginal_effect_model_4 <- 2* 186.9
+marginal_effect_model_4 # 373.8*livarea for houses with small lots
+
+# (f) Plot house selling price against AGE. Estimate the linear model SPRICE = d1 + d2*AGE + e. 
+# Interpret the estimated coefficients. Repeat this exercise using the log-linear model In(SPRICE) = u1 + u2*AGE + e. Based on the plots and visual fit of the estimated regression lines, which of these two models would you prefer? Explain.
+
+model_5 <- lm(sprice~age, data=stockton4)
+model_5
+
+# (Intercept)          age  
+#    137403.6       -627.2 
+
+# model 5 --> Selling Price = 137403.6 - 627.2*age
+
+ggplot(stockton4,aes(x=age,y=sprice))+
+  geom_point(color="darkblue")+
+  geom_abline(slope=-627.2, intercept=137403.6, color="red")+
+  xlab("age of house")+
+  ylab("Selling Price")
+
+model_6 <- lm(log(sprice)~age, data=stockton4)
+model_6
+
+# Coefficients:
+#  (Intercept)          age  
+#     11.74597     -0.00476  
+
+# model 6 ---> Selling Price = 11.74597 - 0.00476*age
+
+# (g) Estimate a linear regression SPRICE = h1 + h2*LGELOT + e with dependent variable SPRICE and independent variable the indicator LGELOT which identifies houses on larger lots. Interpret these results.
+
+model_6 <- lm(sprice~lgelot,data=stockton4)
+model_6
+
+# Coefficients:
+#  (Intercept)       lgelot  
+#       115220       133797  
+
+# If lgelot=1, Selling Price = 115220 + 133797*lgelot = 249017
+# If lgelot=0, Selling Price = 115220
+
+#---------------------------------------------------------------------------
+
+rm(list=ls())
+
+# Exercise 2.13 
+
+# A longitudinal experiment was conducted in Tennessee beginning in 1985 and ending in 1989. A single cohort of students was followed from kindergarten through third grade. In the experiment children were randomly assigned within schools into three types of classes: small classes with 13–17 students, regular-sized classes with 22–25 students, and regular-sized classes with a full-time teacher aide to assist the teacher. Student scores on achievement tests were recorded as well as some information about the students, teachers, and schools. Data for the kindergarten classes are contained in the data file star.dat.
+
+data(star)
+
+# (a) Using children who are in either a regular-sized class or a small class, estimate the regression model explaining students’ combined aptitude scores as a function of class size, TOTALSCOREi = b1 + b2SMALLi + ei. Interpret the estimates. Based on this regression result, what do you conclude about the effect of class size on learning?
+
+model_1 <- lm(totalscore~small, data=star) 
+model_1
+
+# Coefficients:
+# (Intercept)        small  
+#     918.20        13.74
+
+# model_1 --> Totalscore = 918.2 + 13.74*small 
+# where totalscore (regular sized class) = 918.2 for small = 0 or regular = 1, and totalscore (small-sized class) = 918.2 + 13.74 for small = 1, regular = 0.
+# regular = 918.2 and small = 931.94, the difference of 13.74 is about 1.5% increase from a regular sized class to small sized class.
+# 13.74/931.94 * 100% = 1.5%
+
+
+# (b) Repeat part (a) using dependent variables READSCORE and MATHSCORE.Do you observe any differences?
+
+model_2 <- lm(readscore~small, data=star)
+model_2
+
+# Coefficients:
+#  (Intercept)        small  
+#     435.089        5.463  
+
+# model_2 --> read score = 435.089 + 5.463*small
+# readscore(regular) = 435.089, readscore(small) = 440.552, difference of 1.24%.
+
+model_3 <- lm(mathscore~small, data=star)
+model_3
+
+# Coefficients:
+#  (Intercept)        small  
+#      483.113        8.277
+
+# model_3 --> readscore = 483.113 + 8.277*small
+# mathscore (regular) = 483.113, readscore (small) = 483.113 + 8.277 = 491.39, difference of 1.68%.
+
+# these results do suggest that small classes have a positive result on read score and math score.
+
+# (c) Using children who are in either a regular-sized class or a regular-sized class with a teacher aide, estimate the regression model explaining student’s combined aptitude scores as a function of the presence of a teacher aide, TOTALSCORE = g1 + g2*AIDE + e. Interpret the estimates. Based on this regression result, what do you conclude about the effect on learning of adding a teacher aide to the classroom?
+
+regular_sized_class <- filter(star, small==0)
+
+model_4 <- lm(totalscore~aide, data=regular_sized_class)
+model_4
+
+# Coefficients:
+# (Intercept)         aide  
+#    918.0429       0.3139 
+
+# model_4 ---> total score = 918.0429 + 0.3139*aide
+# total score (without aide) = 918.0429, total score (with aide) = 918.4
+# difference of 0.034% -- > this suggest that with aide only has a small positive impact.
+
+# Repeat part (c) using dependent variables READSCORE and MATHSCORE. Do you observe any differences?
+
+model_5 <- lm(readscore~aide, data=regular_sized_class)
+model_5
+
+# Coefficients:
+# (Intercept)         aide  
+#    434.7327       0.7054
+
+# model_5 --> readscore = 434.7327 + 0.7054*aide --> negligible difference.
+
+model_6 <- lm(mathscore~aide, data=regular_sized_class)
+model_6
+
+# Coefficients:
+#  (Intercept)         aide  
+#     483.3102      -0.3915
+
+# model_6 --> total score = 483.3102 - 0.3915*aide
+# the decrease suggest a slight negative impact on total score with aide (still negligible).
+
+# ---------------------------------------------------------------------------
+
+# Exercise 2.14
+
+rm(list=ls())
+
+data(fair4)
+
+#model: Dependent variable - Vote = percentage share of the popular vote won by the incumbent party.
+#       Explanatory variable - Growth = growth rate in real per capita GDP in the first three quarters of the election year.
+# Assumption: if the economy is doing well, and growth is high, the party in power would have a better chance of winning the election.
+
+# (a) Using the data for 1916–2008, plot a scatter diagram of VOTE against GROWTH.Does there appear to be positive association?
+
+years_selection <- filter(fair4, year>=1916, year<=2008)
+
+ggplot(years_selection,aes(x=growth,y=vote))+
+  geom_point(color="darkblue")+
+  xlab("Growth rate before election")+
+  ylab("Incumbent, Vote")
+
+# There appears to be a positive association between VOTE and GROWTH.
+
+# (b) Estimate the regression VOTE = b1 + b2GROWTH + e by least squares using the data from 1916 to 2008. Report and discuss the estimation result. Sketch, by hand, the fitted line on the data scatter from (a).
+
+model_1 <- lm(vote~growth,data=years_selection)
+model_1 
+
+# Coefficients:
+#   (Intercept)       growth  
+#       50.8484       0.8859
+
+# model_1 : VOTE = 50.8484 + o.8859*GROWTH
+
+ggplot(years_selection,aes(x=growth,y=vote))+
+  geom_point(color="darkblue")+
+  geom_abline(slope=0.8859, intercept=50.8484, color="red")+
+  xlab("Growth rate before election")+
+  ylab("Incumbent, Vote")
+
+# based on the fitted regression intercept, that that the incumbent party’s expected vote is 50.848% when the growth rate in GDP is zero. This suggests that when there is no real GDP growth, the incumbent party will still maintain the majority vote.
+
+# (c) Fit the regression in (b) using the data from 1916 to 2004. Predict the VOTE share for the incumbent party based on the actual 2008 value for GROWTH. How does the predicted vote for 2008 compare to the actual result?
+
+years_selection_2 <- filter(fair4, year>=1916, year<=2004)
+
+model_2 <- lm(vote~growth, data=years_selection_2)
+model_2
+
+# Coefficients:
+#   (Intercept)       growth  
+#        51.053        0.878
+
+# model_2 : Vote = 51.053 + 0.878*Growth
+tail(years_selection) 
+
+row_2008_data <- filter(fair4,year==2008)
+row_2008_data
+
+#     year vote party person duration war growth inflation goodnews
+#  33 2008 46.6    -1      0        1   0   0.22      2.88        3
+
+# see growth for 2008 = 0.220
+# see vote for 2008 = 46.6
+
+Using_model_2 <- 51.053+(0.878*0.220)
+Using_model_2 #[1] 51.24616
+
+# By using the model, the incumbent party will maintain the majority vote.
+# But given that the data says 46.6 for the vote in 2008, this is a long way short of the prediction, the incumbent party did not win the majority vote.
+
+# (d) Economy wide inflation may spell doom for the incumbent party in an election.The variable INFLATION is the growth in prices over the first 15 quarters of an administration. Using the data from 1916 to 2008, plot VOTE against INFLATION. Using the same sample, report and discuss the estimation results for the model VOTE = a1 + a2INFLATION + e.
+
+model_3 <- lm(vote~inflation, data=years_selection)
+model_3
+
+# Coefficients:
+#  (Intercept)    inflation  
+#     53.4077      -0.4443
+
+# model 3--> Vote = 53.4077 - 0.4443*Inflation
+
+ggplot(years_selection,aes(x=inflation,y=vote))+
+  geom_point(color="darkblue")+
+  geom_abline(slope=-0.4443, intercept=53.4077, color="red")+
+  xlab("Inflation Rate")+
+  ylab("Incumbent, Vote")
+
+# A 1 percentage increase in inflation rate decreases vote bz 0.444 percentage points.
+# The estimated intercept suggests that when inflation is at 0% for that party’s first 15 quarters, the expected share of votes won by the incumbent party is 53.4%; the incumbent party is predicted to maintain the majority vote when inflation, during its first 15 quarters, is at 0%.
+
+#---------------------------------------------------------------------------
+
+# Exercise 2.15
+
+rm(list=ls())
+library(ggplot2)
+
+data("cps4_small")
+
+# How much does education affect wage rates? The data file cps4_small.dat contains 1000 observations on hourly wage rates, education, and other variables from the 2008 Current Population Survey (CPS).
+
+# (a) Obtain the summary statistics and histograms for the variables WAGE and EDUC. Discuss the data characteristics.
+
+summary(cps4_small$educ)
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 0.0    12.0    13.0    13.8    16.0    21.0 
+
+
+ggplot(cps4_small,aes(x=educ))+
+  geom_bar()
+
+# Most people had 12 years of education, implying that they finished their education at the end of high school.
+
+summary(cps4_small$wage)
+
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 1.97   11.25   17.30   20.62   25.63   76.39 
+
+ggplot(cps4_small,aes(x=wage))+
+  geom_histogram()+
+  xlab("Hourly Wage")
+  
+# The observations for WAGE are skewed to the right indicating that most of the observations lie between the hourly wages of 5 to 40, and that there is a smaller proportion of observations with an hourly wage greater than 40. Half of the sample earns an hourly wage of more than 17.30 dollars per hour, with the average being 20.62 dollars per hour. The maximum earned in this sample is 76.39 dollars per hour and the least earned in this sample is 1.97 dollars per hour.
+
+# (b) Estimate the linear regression WAGE = b1 + b2EDUC + e and discuss the results.
+
+model_1 <- lm(wage~educ, data=cps4_small)
+model_1
+
+# Coefficients:
+# (Intercept)         educ  
+#     -6.71         1.98  
+
+# model 1 --> wage = -6.71 + 1.98*education
+# The coefficient 1.9803 represents the estimated increase in the expected hourly wage rate for an extra year of education. The coefficient 􏰄6.7103 represents the estimated wage rate of a worker with no years of education. It should not be considered meaningful as it is not possible to have a negative hourly wage rate.
+
+# (c) Calculate the least squares residuals and plot them against EDUC. Are any patterns evident? If assumptions SR1–SR5 hold, should any patterns be evident in the least squares residuals?
+
+cps4_small$residuals <- model_1$residuals
+
+ggplot(cps4_small,aes(x=educ,y=residuals))+
+  geom_point()
+
+# There is a pattern evident; as EDUC increases, the magnitude of the residuals also increases, suggesting that the error variance is larger for larger values of EDUC – a violation of assumption SR3. If the assumptions SR1-SR5 hold, there should not be any patterns evident in the residuals.
+
+# (d) Estimate separate regressions for males, females, blacks, and whites. Compare the results.
+
+library(dplyr)
+female <- filter(cps4_small, cps4_small$female==1)
+male <- filter(cps4_small, cps4_small$female==0)
+black <- filter(cps4_small, cps4_small$black==1)
+white <- filter(cps4_small, cps4_small$black==0, cps4_small$asian==0)
+
+model_2 <- lm(wage~educ, data=female)
+model_2
+
+# model_2 (FEMALE) --> wage = -14.168 + 2.358*educ
+
+model_3 <- lm(wage~educ, data=male)
+model_3
+
+# model_3 (MALE) --> wage = -3.054 + 1.875*educ
+
+model_4 <- lm(wage~educ, data=black)
+model_4
+
+# model_4 (BLACK) --> wage = -15.086 + 2.449*educ
+
+model_5 <- lm(wage~educ, data=white)
+model_5
+
+# model_5 (WHITE) --> wage = -6.551 + 1.992*educ
+
+# From the results we can see that an extra year of education increases the wage rate of a black worker more than it does for a white worker. And an extra year of education increases the wage rate of a female worker more than it does for a male worker.
+
+# (e) Estimate the quadratic regression WAGE = a1 + a2*EDUC^2 + e and discuss the results. Estimate the marginal effect of another year of education on wage for a person with 12 years of education, and for a person with 14 years of education. Compare these values to the estimated marginal effect of education from the linear regression in part (b).
+
+cps4_small$educ2 <- cps4_small$educ^2
+
+quad_model_1 <- lm(wage~educ2, data=cps4_small)
+quad_model_1
+
+# the estimated quadratic equation is wage = 6.0823 + 0.07349*educ^2 
+
+marginal_effect_12years <- 2*quad_model_1$coefficients[2]*12
+marginal_effect_12years # 1.763737 
+
+# an additional year of education for a person with 12 years of education is expected to increase wage by $1.76.
+
+marginal_effect_14years <- 2*quad_model_1$coefficients[2]*14
+marginal_effect_14years # 2.057694 
+
+# An additional year of education for a person with 14 years of education is expected to increase wage by $2.06.
+
+# (f) Plot the fitted linear model from part (b) and the fitted values from the quadratic model from part (e) in the same graph with the data on WAGE and EDUC. Which model appears to fit the data better?
+
+ggplot(cps4_small,aes(x=educ,y=wage))+
+  geom_point(color="darkblue")+
+  geom_abline(slope=1.98, intercept=-6.71, color="green")+
+  geom_smooth(method="lm", formula=y~poly(x,2), color="red", size=0.5, se=FALSE)+
+  xlab("Education")+
+  ylab("Wage")
+
+# The quadratic model appears to fit the data slightly better than the linear equation.
+
+# (g) Construct a histogram of ln(WAGE).Compare the shape of this histogram to that for WAGE from part (a). Which appears more symmetric and bell-shaped?
+
+ggplot(cps4_small,aes(x=log(wage)))+ 
+  geom_histogram(aes(y=..density..), color="grey", fill="white")+
+  geom_density(alpha=.2, fill="#FF6666")+
+  xlab("Hourly Wage")
+
+# The histogram of ln(WAGE) in the figure is more symmetrical and bell-shaped than the histogram of WAGE given in part (a).
+
+# (h) Estimate the log-linear regression log(WAGE) = gamma_1 + gamma_2*EDUC + e. Estimate the marginal effect of another year of education on wage for a person with 12 years of education, and for a person with 14 years of education. Compare these values to the estimated marginal effects of education from the linear regression in part (b) and the quadratic equation in part (e).
+
+log_linear_model_1 <- lm(log(wage)~educ, data=cps4_small)
+log_linear_model_1
+
+# The estimated log linear model is log(Wage) = 1.60944 + 0.09041*educ
+# Each additional year of education increases expected wage by approx. 9.04%
+
+wage_rates_12years <- exp(log_linear_model_1$coefficients[1]+log_linear_model_1$coefficients[2]*12)
+wage_rates_12years # 14.7958 
+
+wage_rates_14years <- exp(log_linear_model_1$coefficients[1]+log_linear_model_1$coefficients[2]*14)
+wage_rates_14years # 17.72826 
+
+marginal_effect_log_12years <- log_linear_model_1$coefficients[2]*wage_rates_12years
+marginal_effect_log_12years # 1.337662 
+
+marginal_effect_log_14years <- log_linear_model_1$coefficients[2]*wage_rates_14years
+marginal_effect_log_14years # 1.602781 
+
+# For the quadratic relationship the corresponding marginal effect estimates are $1.76 and $2.06 (see part e).
+# The marginal effects from the log-linear model are lower.
+
+ggplot(cps4_small,aes(x=educ,y=wage))+
+  geom_point(color="darkblue")+
+  geom_abline(slope=1.98, intercept=-6.71, color="green")+
+  geom_smooth(method="lm", formula=y~poly(x,2), color="red", size=0.5, se=FALSE)+
+  geom_smooth(method = "glm", formula = y~x,
+              method.args = list(family = gaussian(link = 'log')),color="blue", size=0.5,se=FALSE)+
+  xlab("Education")+
+  ylab("Wage")
+
+# A comparison of the fitted lines for the linear and log-linear model.
